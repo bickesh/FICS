@@ -139,9 +139,13 @@ const DEMO_USERS = [
 ];
 
 // ─── Role-wise Navigation (SRS §3.2) ──────────────────────────────────────────
+const ROLE_DEFAULT_SCREEN = {
+  AO: 'dashboard', TO: 'dashboard', IMP: 'imp_apps', CHA: 'imp_apps',
+  RD: 'review', CEO: 'review', ADMIN: 'admin_users',
+};
+
 const ROLE_NAV = {
   AO: [
-    { id: 'home',      label: 'FICS Home',           icon: '🏛️' },
     { id: 'dashboard', label: 'Dashboard',            icon: '🏠' },
     { id: 'bin',       label: 'Application Bin',      icon: '📋' },
     { id: 'scrutiny',  label: 'Scrutiny',             icon: '🔍', badge: 12 },
@@ -153,7 +157,6 @@ const ROLE_NAV = {
     { id: 'reports',   label: 'Reports',              icon: '📊' },
   ],
   TO: [
-    { id: 'home',      label: 'FICS Home',          icon: '🏛️' },
     { id: 'dashboard', label: 'My Dashboard',        icon: '🏠' },
     { id: 'bin',       label: 'Application Bin',     icon: '📋' },
     { id: 'scrutiny',  label: 'Scrutiny Workbench', icon: '🔍', badge: 12 },
@@ -162,7 +165,6 @@ const ROLE_NAV = {
     { id: 'reports',   label: 'Reports',             icon: '📊' },
   ],
   IMP: [
-    { id: 'home',        label: 'FICS Home',           icon: '🏛️' },
     { id: 'imp_apps',    label: 'My Applications',     icon: '📋', badge: 3 },
     { id: 'imp_payment', label: 'Payments',            icon: '💳', badge: 1 },
     { id: 'imp_clarif',  label: 'Clarifications',      icon: '❓', badge: 2 },
@@ -170,7 +172,6 @@ const ROLE_NAV = {
     { id: 'imp_review',  label: 'Review & Retest',     icon: '⚖️' },
   ],
   CHA: [
-    { id: 'home',        label: 'FICS Home',            icon: '🏛️' },
     { id: 'imp_apps',    label: 'Client Applications',  icon: '📋', badge: 5 },
     { id: 'imp_payment', label: 'Payments',             icon: '💳', badge: 2 },
     { id: 'imp_clarif',  label: 'Clarifications',       icon: '❓', badge: 3 },
@@ -178,17 +179,14 @@ const ROLE_NAV = {
     { id: 'imp_review',  label: 'Review & Retest',      icon: '⚖️' },
   ],
   RD: [
-    { id: 'home',    label: 'FICS Home',     icon: '🏛️' },
     { id: 'review',  label: 'Review Queue',  icon: '⚖️', badge: 2 },
     { id: 'reports', label: 'Port Reports',  icon: '📊' },
   ],
   CEO: [
-    { id: 'home',    label: 'FICS Home',             icon: '🏛️' },
     { id: 'review',  label: '2nd Appeal Queue',      icon: '🏛️', badge: 1 },
     { id: 'reports', label: 'Performance Dashboard', icon: '📊' },
   ],
   ADMIN: [
-    { id: 'home',            label: 'FICS Home',        icon: '🏛️' },
     { id: 'admin_users',     label: 'User Management',  icon: '👥' },
     { id: 'admin_masters',   label: 'Master Management',icon: '⚙️' },
     { id: 'admin_circulars', label: 'Circulars & CMS',  icon: '📰' },
@@ -1555,8 +1553,364 @@ function Reports() {
   );
 }
 
+// ─── Hero / Public Landing Page ────────────────────────────────────────────────
+function HeroPage({ onLoginClick }) {
+  const stats = [
+    { val: '3,24,816', label: 'Applications Processed', icon: '📋' },
+    { val: '2,98,442', label: 'NOCs Issued',             icon: '✅' },
+    { val: '47',       label: 'Active Ports / ICDs',     icon: '🚢' },
+    { val: '124',      label: 'INFOLNET Labs Linked',    icon: '🧪' },
+  ];
+  const notices = [
+    { date: '28 Apr 2026', tag: 'Circular', text: 'Revised SOP for PADS consignments at Air Cargo Stations — effective 01 May 2026' },
+    { date: '22 Apr 2026', tag: 'Advisory', text: 'SWIFT 3.0 integration — new BE fields mandatory from 15 May 2026' },
+    { date: '18 Apr 2026', tag: 'Notice',   text: 'HS Code mapping update for dairy and edible oil categories — refer Annexure III' },
+    { date: '10 Apr 2026', tag: 'Update',   text: 'INFOLNET Lab roster updated for JNPT, Chennai, and Kolkata ports' },
+  ];
+  const quickLinks = [
+    { icon: '📄', label: 'FSSAI Regulations & Standards' },
+    { icon: '🔍', label: 'Track Your Application (ARN)' },
+    { icon: '📘', label: 'Import Guidelines & SOP' },
+    { icon: '🧾', label: 'Approved Lab List (INFOLNET)' },
+    { icon: '📞', label: 'Helpdesk & Support' },
+    { icon: '❓', label: 'FAQs — Importer / CHA' },
+  ];
+
+  return (
+    <div className="min-h-screen flex flex-col bg-white text-gray-800" style={{ fontFamily: 'Arial, sans-serif' }}>
+
+      {/* ── Utility Bar ─────────────────────────────────────────────────────── */}
+      <div className="bg-[#154360] text-white py-1 px-6 flex items-center justify-end gap-5 text-[11px]">
+        <button className="hover:underline opacity-80 hover:opacity-100">Skip to Main Content</button>
+        <span className="opacity-30">|</span>
+        <button className="hover:underline opacity-80 hover:opacity-100">Screen Reader Access</button>
+        <span className="opacity-30">|</span>
+        <span className="opacity-70">Text Size:</span>
+        <div className="flex items-center gap-1">
+          <button className="border border-white/40 px-1.5 rounded hover:bg-white/10 text-[10px] leading-none py-0.5">A-</button>
+          <button className="border border-white/40 px-1.5 rounded hover:bg-white/10 text-xs leading-none py-0.5">A</button>
+          <button className="border border-white/40 px-1.5 rounded hover:bg-white/10 text-sm leading-none py-0.5">A+</button>
+        </div>
+        <span className="opacity-30">|</span>
+        <button className="hover:underline opacity-80 hover:opacity-100 font-medium">English</button>
+        <span className="text-white/40">/</span>
+        <button className="hover:underline opacity-60 hover:opacity-100">हिन्दी</button>
+      </div>
+
+      {/* ── Main Header ─────────────────────────────────────────────────────── */}
+      <header className="bg-white border-b-4 border-[#FF6200] shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+
+          {/* Left: Ministry + FSSAI branding block (matches attached image) */}
+          <div className="flex items-center gap-5">
+            {/* Ministry of Health block */}
+            <div className="flex items-center gap-3">
+              <img
+                src="https://upload.wikimedia.org/wikipedia/en/4/41/Flag_of_India.svg"
+                alt="Indian Flag"
+                className="h-10 w-auto"
+                onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
+              />
+              <span className="text-3xl hidden items-center">🇮🇳</span>
+              <div>
+                <div className="text-[13px] font-bold text-[#1A237E] leading-tight">Ministry of Health &amp; Family Welfare</div>
+                <div className="text-[11px] text-[#1A237E] leading-tight">Government of India</div>
+                <div className="text-[10px] text-gray-400 leading-tight">मंत्रालय स्वास्थ्य एवं परिवार कल्याण</div>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="h-14 w-px bg-gray-200 mx-1" />
+
+            {/* FSSAI logo block */}
+            <div className="flex items-center gap-3">
+              <div className="w-14 h-14 rounded-full bg-white border-2 border-[#006633] flex items-center justify-center shadow-sm flex-shrink-0">
+                <svg viewBox="0 0 48 48" className="w-10 h-10">
+                  <circle cx="24" cy="24" r="22" fill="#006633" />
+                  <text x="24" y="30" textAnchor="middle" fill="white" fontSize="18" fontWeight="bold" fontFamily="Arial">F</text>
+                </svg>
+              </div>
+              <div>
+                <div className="text-[11px] font-black text-[#006633] tracking-wider leading-tight uppercase">Food Safety and Standards</div>
+                <div className="text-[11px] font-black text-[#006633] tracking-wider leading-tight uppercase">Authority of India</div>
+                <div className="text-[10px] text-gray-400 italic leading-tight mt-0.5">Inspiring Trust, Assuring Safe &amp; Nutritious Food</div>
+                <div className="text-[9px] text-gray-400 leading-tight">Ministry of Health and Family Welfare</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: FICS Portal identity */}
+          <div className="text-right flex-shrink-0">
+            <div className="text-[10px] text-gray-400 uppercase tracking-widest mb-0.5">Government of India — Digital Portal</div>
+            <div className="text-3xl font-black text-[#154360] tracking-tight leading-none">FICS</div>
+            <div className="text-[13px] font-bold text-[#006633] leading-tight">Food Import Clearance System</div>
+          </div>
+        </div>
+      </header>
+
+      {/* ── Navigation Bar ──────────────────────────────────────────────────── */}
+      <nav className="bg-[#006633] shadow-md">
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+          <div className="flex">
+            {[
+              { label: 'Home', active: true },
+              { label: 'About FICS' },
+              { label: 'Circulars & Notices' },
+              { label: 'Import Guidelines' },
+              { label: 'Track Application' },
+              { label: 'Help & FAQs' },
+              { label: 'Contact Us' },
+            ].map(item => (
+              <button key={item.label}
+                className={`px-4 py-3 text-[12px] font-medium transition-colors ${item.active ? 'bg-[#004422] text-white border-b-2 border-[#FF6200]' : 'text-white/80 hover:bg-[#004d26] hover:text-white'}`}>
+                {item.label}
+              </button>
+            ))}
+          </div>
+          <button onClick={onLoginClick}
+            className="my-2 bg-[#FF6200] hover:bg-[#e05500] text-white font-bold px-6 py-2 rounded text-[12px] transition-colors shadow flex items-center gap-2">
+            <span>🔐</span> Login to FICS Portal
+          </button>
+        </div>
+      </nav>
+
+      {/* ── Hero Section ────────────────────────────────────────────────────── */}
+      <main className="flex-1">
+        <section className="bg-gradient-to-br from-[#EAF4EA] via-[#F0F7FF] to-[#EAF4EA] py-12">
+          <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 gap-10 items-center">
+
+            {/* LEFT: Official branding panel (matches attached header image) */}
+            <div className="relative">
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+                {/* Replicated header image area */}
+                <div className="bg-white px-6 py-5 border-b border-gray-100">
+                  <div className="flex items-center gap-4">
+                    <span className="text-5xl">🇮🇳</span>
+                    <div>
+                      <div className="text-base font-bold text-[#1A237E]">Ministry of Health &amp; Family Welfare</div>
+                      <div className="text-sm font-semibold text-[#1A237E]">Government of India</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-[#F8FFF8] px-6 py-4 border-b border-gray-100">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-[#006633] flex items-center justify-center shadow flex-shrink-0">
+                      <span className="text-white font-black text-2xl">F</span>
+                    </div>
+                    <div>
+                      <div className="text-sm font-black text-[#006633] uppercase tracking-wide leading-tight">Food Safety and Standards</div>
+                      <div className="text-sm font-black text-[#006633] uppercase tracking-wide leading-tight">Authority of India</div>
+                      <div className="text-xs text-[#388E3C] italic mt-1">Inspiring Trust, Assuring Safe &amp; Nutritious Food</div>
+                      <div className="text-xs text-gray-400 mt-0.5">Ministry of Health and Family Welfare</div>
+                    </div>
+                  </div>
+                </div>
+                {/* Showcase content */}
+                <div className="bg-gradient-to-br from-[#006633] to-[#004422] px-6 py-6 text-white">
+                  <div className="text-lg font-black tracking-wide mb-1">FICS 2.0</div>
+                  <div className="text-sm font-semibold mb-3 text-green-200">Food Import Clearance System</div>
+                  <div className="space-y-2">
+                    {[
+                      '🚢 Covers all major Indian Ports & Air Cargo Stations',
+                      '🔗 SWIFT / ICEGATE real-time integration',
+                      '🧪 INFOLNET lab network — 124 accredited labs',
+                      '📜 Digital NOC, PNOC & NCC issuance',
+                      '⚖️  Multi-level Review & Appeal mechanism',
+                    ].map(f => (
+                      <div key={f} className="flex items-start gap-2 text-xs text-green-100 leading-snug">{f}</div>
+                    ))}
+                  </div>
+                </div>
+                <div className="bg-[#154360] px-6 py-3 flex items-center justify-between">
+                  <span className="text-xs text-white/60">FSSAI &bull; ICEGATE &bull; INFOLNET</span>
+                  <span className="text-xs text-green-300 font-semibold">Secure &bull; Paperless &bull; Transparent</span>
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT: Portal description + utility links + CTA */}
+            <div className="space-y-6">
+              <div>
+                <div className="inline-block bg-[#FF6200]/10 text-[#FF6200] text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wide">
+                  Official Government Portal
+                </div>
+                <h1 className="text-3xl font-black text-[#154360] leading-tight mb-3">
+                  Food Import<br />Clearance System
+                </h1>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  FICS is FSSAI's digital platform for end-to-end processing of food import consignments —
+                  from SWIFT Bill of Entry intake to NOC/NCC issuance. Replacing the legacy WCF system,
+                  FICS 2.0 ensures transparent, paperless, and rule-based clearance at all Indian ports.
+                </p>
+              </div>
+
+              {/* Utility / Quick-action panel */}
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+                <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Quick Actions</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { icon: '🔍', label: 'Track Application (ARN)',  sub: 'Check clearance status' },
+                    { icon: '📥', label: 'Download NOC / NCC',       sub: 'Retrieve issued certificates' },
+                    { icon: '📋', label: 'Import Guidelines',         sub: 'SOP & regulatory guidance' },
+                    { icon: '📞', label: 'Helpdesk Support',          sub: '1800-XXX-XXXX (Toll Free)' },
+                  ].map(q => (
+                    <div key={q.label} className="flex items-start gap-2 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer border border-gray-100 transition-colors">
+                      <span className="text-lg flex-shrink-0">{q.icon}</span>
+                      <div>
+                        <div className="text-xs font-semibold text-gray-800 leading-tight">{q.label}</div>
+                        <div className="text-[10px] text-gray-400 leading-tight mt-0.5">{q.sub}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Login CTA */}
+              <div className="bg-gradient-to-r from-[#154360] to-[#006633] rounded-xl p-5 text-white">
+                <div className="text-sm font-bold mb-1">Authorised Users — Secure Login</div>
+                <div className="text-xs text-white/70 mb-4">
+                  Officers, Importers, CHA, Regional Directors, and Administrators access FICS through their designated role-based portal.
+                </div>
+                <button onClick={onLoginClick}
+                  className="w-full bg-[#FF6200] hover:bg-[#e05500] text-white font-bold py-3 rounded-lg text-sm transition-colors shadow-lg flex items-center justify-center gap-2">
+                  <span>🔐</span> Login to FICS Portal &rarr;
+                </button>
+                <p className="text-center text-[10px] text-white/40 mt-2">
+                  Secured by NIC &bull; 256-bit SSL Encryption &bull; GOI Data Centre
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Stats Bar ───────────────────────────────────────────────────────── */}
+        <section className="bg-[#154360] py-6">
+          <div className="max-w-7xl mx-auto px-6 grid grid-cols-4 gap-6">
+            {stats.map(s => (
+              <div key={s.label} className="text-center">
+                <div className="text-2xl mb-1">{s.icon}</div>
+                <div className="text-2xl font-black text-white">{s.val}</div>
+                <div className="text-xs text-blue-300 font-medium">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Notices + Quick Links ────────────────────────────────────────────── */}
+        <section className="bg-gray-50 py-10">
+          <div className="max-w-7xl mx-auto px-6 grid grid-cols-3 gap-8">
+
+            {/* Notices */}
+            <div className="col-span-2">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-black text-[#154360] uppercase tracking-wide flex items-center gap-2">
+                  <span>📢</span> Latest Notices &amp; Circulars
+                </h2>
+                <button className="text-xs text-[#006633] hover:underline font-semibold">View All →</button>
+              </div>
+              <div className="space-y-3">
+                {notices.map(n => (
+                  <div key={n.text} className="bg-white rounded-lg border border-gray-200 px-4 py-3 flex items-start gap-3 hover:shadow-sm cursor-pointer transition-shadow">
+                    <div className="text-[10px] font-bold text-white px-2 py-0.5 rounded mt-0.5 flex-shrink-0"
+                      style={{ backgroundColor: n.tag === 'Circular' ? '#006633' : n.tag === 'Advisory' ? '#1A237E' : n.tag === 'Notice' ? '#FF6200' : '#555' }}>
+                      {n.tag}
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-xs text-gray-800 leading-snug">{n.text}</div>
+                      <div className="text-[10px] text-gray-400 mt-1">{n.date}</div>
+                    </div>
+                    <span className="text-gray-300 text-xs flex-shrink-0">›</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h2 className="text-sm font-black text-[#154360] uppercase tracking-wide flex items-center gap-2 mb-4">
+                <span>🔗</span> Quick Links
+              </h2>
+              <div className="space-y-2">
+                {quickLinks.map(l => (
+                  <button key={l.label}
+                    className="w-full text-left flex items-center gap-3 px-3 py-2.5 bg-white rounded-lg border border-gray-200 hover:border-[#006633] hover:bg-[#F8FFF8] text-xs font-medium text-gray-700 transition-all">
+                    <span className="text-base">{l.icon}</span>
+                    <span>{l.label}</span>
+                    <span className="ml-auto text-gray-300">›</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-4 bg-[#FFF8F0] border border-[#FF6200]/30 rounded-lg p-3">
+                <div className="text-xs font-bold text-[#FF6200] mb-1">🆘 Need Help?</div>
+                <div className="text-[11px] text-gray-600 leading-snug">
+                  Helpdesk: <span className="font-semibold">1800-XXX-XXXX</span><br />
+                  Email: <span className="font-semibold">fics-support@fssai.gov.in</span><br />
+                  Mon–Fri, 9:00 AM – 6:00 PM IST
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* ── Footer ──────────────────────────────────────────────────────────── */}
+      <footer className="bg-[#0D1B2A] text-white">
+        <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-4 gap-8 text-xs">
+          <div>
+            <div className="font-black text-base text-green-400 mb-2">FICS</div>
+            <div className="text-white/60 leading-relaxed text-[11px]">
+              Food Import Clearance System<br />
+              An initiative of FSSAI under the Ministry of Health &amp; Family Welfare, Government of India.
+            </div>
+            <div className="mt-3 flex gap-2">
+              {['FSSAI', 'ICEGATE', 'NIC'].map(b => (
+                <span key={b} className="text-[10px] border border-white/20 px-2 py-0.5 rounded text-white/50">{b}</span>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="font-bold text-white/80 mb-3 text-[11px] uppercase tracking-wide">About</div>
+            <ul className="space-y-1.5 text-white/50 text-[11px]">
+              {['About FSSAI', 'About FICS', 'Governing Policy', 'Annual Reports', 'RTI'].map(l => (
+                <li key={l}><button className="hover:text-white transition-colors">{l}</button></li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <div className="font-bold text-white/80 mb-3 text-[11px] uppercase tracking-wide">Services</div>
+            <ul className="space-y-1.5 text-white/50 text-[11px]">
+              {['Track Application', 'Download NOC/NCC', 'Import Guidelines', 'Lab Finder', 'Grievance Redressal'].map(l => (
+                <li key={l}><button className="hover:text-white transition-colors">{l}</button></li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <div className="font-bold text-white/80 mb-3 text-[11px] uppercase tracking-wide">Contact</div>
+            <div className="text-white/50 text-[11px] space-y-1.5 leading-relaxed">
+              <div>FSSAI Head Office<br />FDA Bhawan, Kotla Road<br />New Delhi — 110002</div>
+              <div>📞 1800-XXX-XXXX (Toll Free)</div>
+              <div>✉ fics-support@fssai.gov.in</div>
+            </div>
+          </div>
+        </div>
+        <div className="border-t border-white/10 py-3 px-6">
+          <div className="max-w-7xl mx-auto flex items-center justify-between text-[10px] text-white/30">
+            <span>&copy; 2026 Food Safety and Standards Authority of India (FSSAI) — Government of India. All Rights Reserved.</span>
+            <div className="flex gap-4">
+              {['Privacy Policy', 'Terms of Use', 'Accessibility Statement', 'Sitemap'].map(l => (
+                <button key={l} className="hover:text-white/60 transition-colors">{l}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
 // ─── Login Screen ──────────────────────────────────────────────────────────────
-function LoginScreen({ onLogin }) {
+function LoginScreen({ onLogin, onBack }) {
   const roleCards = [
     { role: 'AO',    label: 'Authorized Officer',  icon: '👨‍⚖️', desc: 'Scrutiny, Payment, VI, Lab, NOC issuance',           color: 'border-green-300 hover:bg-green-50' },
     { role: 'TO',    label: 'Technical Officer',   icon: '🔬',   desc: 'Scrutiny workbench, VI capture, Lab recommendation',  color: 'border-blue-300 hover:bg-blue-50' },
@@ -1587,13 +1941,20 @@ function LoginScreen({ onLogin }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-800 to-green-950 flex flex-col items-center justify-center p-6">
+      {onBack && (
+        <div className="w-full max-w-4xl mb-3">
+          <button onClick={onBack} className="flex items-center gap-1.5 text-white/60 hover:text-white text-xs transition-colors">
+            ← Back to Portal Home
+          </button>
+        </div>
+      )}
       <div className="text-center mb-7">
         <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
           <span className="text-green-700 font-black text-2xl">F</span>
         </div>
         <div className="text-white/70 text-xs tracking-widest mb-1 uppercase">Food Safety and Standards Authority of India</div>
         <div className="text-white text-2xl font-bold">Food Import Clearance System</div>
-        <div className="text-white/50 text-sm mt-1">FICS v3.0 — Officer & Stakeholder Portal</div>
+        <div className="text-white/50 text-sm mt-1">FICS v3.0 — Officer &amp; Stakeholder Portal</div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6">
@@ -2541,20 +2902,31 @@ function Appeal2Panel() {
 
 // ─── Root App ──────────────────────────────────────────────────────────────────
 export default function App() {
+  // appView: 'hero' → public landing  |  'login' → login screen  |  'main' → portal
+  const [appView, setAppView]       = useState('hero');
   const [currentUser, setCurrentUser] = useState(null);
-  const [screen, setScreen] = useState('home');
+  const [screen, setScreen]         = useState('dashboard');
   const [selectedId, setSelectedId] = useState(null);
 
   const go = (s, id = null) => { setSelectedId(id); setScreen(s); };
 
-  const handleLogin = (user) => { setCurrentUser(user); setScreen('home'); };
-  const handleLogout = () => { setCurrentUser(null); setScreen('home'); };
+  const handleLogin = (user) => {
+    setCurrentUser(user);
+    setScreen(ROLE_DEFAULT_SCREEN[user.role] ?? 'dashboard');
+    setAppView('main');
+  };
 
-  if (!currentUser) return <LoginScreen onLogin={handleLogin} />;
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setScreen('dashboard');
+    setAppView('hero');
+  };
+
+  if (appView === 'hero') return <HeroPage onLoginClick={() => setAppView('login')} />;
+  if (appView === 'login') return <LoginScreen onLogin={handleLogin} onBack={() => setAppView('hero')} />;
 
   const u = currentUser;
   const SCREENS = {
-    home:            <FICSHome go={go} currentUser={u} />,
     dashboard:       <Dashboard go={go} />,
     bin:             <ApplicationBin go={go} selectedId={selectedId} />,
     scrutiny:        <ScrutinyScreen go={go} selectedId={selectedId} />,
@@ -2574,11 +2946,13 @@ export default function App() {
     admin_circulars: <AdminPortal currentUser={u} defaultTab="circulars" />,
   };
 
+  const defaultScreen = ROLE_DEFAULT_SCREEN[u?.role] ?? 'dashboard';
+
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       <Sidebar active={screen} go={s => go(s)} currentUser={u} onLogout={handleLogout} />
       <main className="flex-1 overflow-y-auto p-5">
-        {SCREENS[screen] ?? SCREENS.home}
+        {SCREENS[screen] ?? SCREENS[defaultScreen]}
       </main>
     </div>
   );
