@@ -1,0 +1,2585 @@
+import { useState } from 'react';
+
+// ================================================================
+// FICS OFFICER PORTAL — Complete UI Mockup (AO / TO Screens)
+// Covers: Scrutiny → Payment → Visual Inspection → Lab → NOC
+// Based on: FICS_FLOW_Chart.pdf + FSSAI_ICEGATE_SWIFT_Workflow.pdf
+// ================================================================
+
+// ─── Dummy Data ────────────────────────────────────────────────────────────────
+const OFFICERS = ['TO - Rajan Kumar', 'TO - Priya Sharma', 'TO - Amit Verma', 'TO - Deepak Nair'];
+
+const APPS = [
+  {
+    id: 'FICS/2024/3821', arn: 'ARN-2024-3821', be: '8234567', beType: 'Regular', beDate: '2024-04-10', igm: 'IGM24001',
+    importType: 'Regular', source: 'SWIFT',
+    importer: 'M/s Global Foods Pvt Ltd', iec: 'AABCG1234A', cha: 'ABC Customs House Agents',
+    port: 'JNPT, Mumbai', cfsLocation: 'CFS Nhava Sheva',
+    stage: 'scrutiny', status: 'PENDING_SCRUTINY', assignedTO: null,
+    items: [
+      { sno: 1, hsCode: '19011090', product: 'Wheat Flour Preparations', qty: '5000 KG', value: '₹4,50,000', country: 'USA', mfgDate: '2024-01-15', expDate: '2025-01-14', scrutinyDecision: null },
+      { sno: 2, hsCode: '21069099', product: 'Food Supplements (Protein Powder)', qty: '200 KG', value: '₹1,20,000', country: 'USA', mfgDate: '2024-02-01', expDate: '2025-01-31', scrutinyDecision: null },
+    ],
+    documents: ['Invoice', 'Packing List', 'FSSAI License', 'Product Declaration'],
+    clarifications: [],
+    payment: null, viAppointment: null, samples: [], labResult: null, certificate: null,
+  },
+  {
+    id: 'FICS/2024/3820', arn: 'ARN-2024-3820', be: '7234566', beType: 'PADS', beDate: '2024-04-09', igm: '',
+    importType: 'PADS', source: 'Manual',
+    importer: 'M/s Tasty Imports Pvt Ltd', iec: 'AABCT5678B', cha: 'XYZ CHA Services',
+    port: 'Chennai Sea', cfsLocation: 'CFS Chennai Port',
+    stage: 'payment', status: 'PENDING_DD_VERIFICATION', assignedTO: 'TO - Rajan Kumar',
+    items: [
+      { sno: 1, hsCode: '09042110', product: 'Dried Chillies', qty: '10000 KG', value: '₹8,00,000', country: 'China', mfgDate: '2024-01-01', expDate: '2024-12-31', scrutinyDecision: 'ACCEPT' },
+    ],
+    documents: ['Invoice', 'Packing List', 'Phytosanitary Certificate'],
+    clarifications: [],
+    payment: { mode: 'DD', ddNo: 'DD123456', bank: 'SBI Branch - Chennai', amount: '₹3,500', status: 'PENDING_VERIFICATION' },
+    viAppointment: null, samples: [], labResult: null, certificate: null,
+  },
+  {
+    id: 'FICS/2024/3819', arn: 'ARN-2024-3819', be: '6234565', beType: 'Regular', beDate: '2024-04-08', igm: 'IGM24003',
+    importType: 'Regular', source: 'Manual',
+    importer: 'M/s Heritage Foods Ltd', iec: 'AABCH9012C', cha: 'DEF Clearing Agents',
+    port: 'JNPT, Mumbai', cfsLocation: 'CFS Gateway',
+    stage: 'visual_inspection', status: 'VI_IN_PROGRESS', assignedTO: 'TO - Priya Sharma',
+    items: [
+      { sno: 1, hsCode: '07031090', product: 'Fresh Onions', qty: '20000 KG', value: '₹2,00,000', country: 'Netherlands', mfgDate: '2024-03-20', expDate: '2024-06-20', scrutinyDecision: 'ACCEPT', sampleId: 'SMP-2024-001', viStatus: 'DISCREPANCY', discrepancyType: 'RECTIFIABLE', discrepancyNote: 'Country of origin label missing on inner packaging' },
+      { sno: 2, hsCode: '07019000', product: 'Potatoes', qty: '15000 KG', value: '₹1,50,000', country: 'Netherlands', mfgDate: '2024-03-20', expDate: '2024-06-20', scrutinyDecision: 'ACCEPT', sampleId: 'SMP-2024-002', viStatus: 'PASSED', discrepancyType: null, discrepancyNote: null },
+    ],
+    documents: ['Invoice', 'Packing List', 'Phytosanitary Certificate', 'Health Certificate'],
+    clarifications: [],
+    payment: { mode: 'Online', txnId: 'TXN789456', amount: '₹5,000', status: 'SUCCESS' },
+    viAppointment: { date: '2024-04-15', time: '10:00', acknowledged: true, ackTime: '11:45', aoApproved: false },
+    samples: [
+      { id: 'SMP-2024-001', itemSno: 1, lab: null, status: 'VI_DISCREPANCY' },
+      { id: 'SMP-2024-002', itemSno: 2, lab: null, status: 'VI_PASSED' },
+    ],
+    labResult: null, certificate: null,
+  },
+  {
+    id: 'FICS/2024/3818', arn: 'ARN-2024-3818', be: '5234564', beType: 'Bulk', beDate: '2024-04-07', igm: 'IGM24004',
+    importType: 'Bulk', source: 'Manual',
+    importer: 'M/s Spice World Exports', iec: 'AABCS3456D', cha: 'GHI CHA',
+    port: 'Kolkata', cfsLocation: 'Kolkata Port Trust',
+    stage: 'lab_testing', status: 'LAB_RESULT_RECEIVED', assignedTO: 'TO - Amit Verma',
+    items: [
+      { sno: 1, hsCode: '09042210', product: 'Dry Red Chilli (Crushed)', qty: '5000 KG', value: '₹12,00,000', country: 'Vietnam', mfgDate: '2023-12-01', expDate: '2024-11-30', scrutinyDecision: 'ACCEPT', sampleId: 'SMP-2024-003', viStatus: 'PASSED' },
+      { sno: 2, hsCode: '09042220', product: 'Chilli Powder', qty: '3000 KG', value: '₹9,00,000', country: 'Vietnam', mfgDate: '2023-12-01', expDate: '2024-11-30', scrutinyDecision: 'ACCEPT', sampleId: 'SMP-2024-004', viStatus: 'PASSED' },
+    ],
+    documents: ['Invoice', 'Packing List', 'Lab Certificate from Origin'],
+    clarifications: [],
+    payment: { mode: 'Online', txnId: 'TXN456789', amount: '₹7,000', status: 'SUCCESS' },
+    viAppointment: { date: '2024-04-10', time: '11:00', acknowledged: true, ackTime: '10:30', aoApproved: true },
+    samples: [
+      { id: 'SMP-2024-003', itemSno: 1, lab: 'FSSAI Referral Lab Mumbai', reportDate: '2024-04-14', result: 'PASS', failReason: null },
+      { id: 'SMP-2024-004', itemSno: 2, lab: 'FSSAI Referral Lab Mumbai', reportDate: '2024-04-14', result: 'FAIL', failReason: 'Aflatoxin B1: 8.2 ppb (limit: 5 ppb). Sudan Red dye detected.' },
+    ],
+    labResult: { receivedDate: '2024-04-14', status: 'RECEIVED' },
+    toRecommendation: null, certificate: null,
+  },
+  {
+    id: 'FICS/2024/3817', arn: 'ARN-2024-3817', be: '4234563', beType: 'Regular', beDate: '2024-04-06', igm: 'IGM24005',
+    importType: 'Regular', source: 'SWIFT',
+    importer: 'M/s Pure Harvest Agro', iec: 'AABCP7890E', cha: 'JKL Customs',
+    port: 'JNPT, Mumbai', cfsLocation: 'CFS Nhava Sheva',
+    stage: 'noc_pending', status: 'NOC_APPROVAL_PENDING', assignedTO: 'TO - Rajan Kumar',
+    items: [
+      { sno: 1, hsCode: '10019900', product: 'Wheat (Durum)', qty: '50000 KG', value: '₹25,00,000', country: 'Canada', mfgDate: '2023-11-01', expDate: '2024-10-31', scrutinyDecision: 'ACCEPT', sampleId: 'SMP-2024-005', viStatus: 'PASSED' },
+    ],
+    documents: ['Invoice', 'Packing List', 'Certificate of Origin', 'Phytosanitary Certificate'],
+    clarifications: [],
+    payment: { mode: 'Online', txnId: 'TXN123789', amount: '₹3,000', status: 'SUCCESS' },
+    viAppointment: { date: '2024-04-09', time: '10:00', acknowledged: true, ackTime: '09:00', aoApproved: true },
+    samples: [
+      { id: 'SMP-2024-005', itemSno: 1, lab: 'FSSAI Referral Lab Delhi', reportDate: '2024-04-13', result: 'PASS', failReason: null },
+    ],
+    labResult: { receivedDate: '2024-04-13', status: 'RECEIVED' },
+    toRecommendation: 'RECOMMEND_NOC', certificate: null,
+  },
+];
+
+const REVIEW_CASES = [
+  {
+    id: 'REV/2024/001', type: 'RETEST', appId: 'FICS/2024/3810',
+    nccNo: 'NCC/FSSAI/JNPT/2024/3810', nccDate: '2024-04-15',
+    daysFromNCC: 12, daysLeft: 3, importer: 'M/s Dragon Foods Pvt Ltd',
+    product: 'Processed Meat Products', hsCode: '16010000',
+    failReason: 'Salmonella detected in primary sample SMP-2024-099 — count 45 MPN/g (limit: absent per 25g)',
+    status: 'RETEST_PENDING_AO', retestSampleSent: false,
+  },
+  {
+    id: 'REV/2024/002', type: 'REVIEW_1', appId: 'FICS/2024/3805',
+    nccNo: 'NCC/FSSAI/JNPT/2024/3805', nccDate: '2024-04-01',
+    daysFromNCC: 25, daysLeft: 5, importer: 'M/s Euro Dairy Imports',
+    product: 'Cheese and Dairy Products', hsCode: '0406.10',
+    failReason: 'Aflatoxin M1: 0.9 μg/kg detected (FSSAI limit: 0.5 μg/kg) in sample SMP-2024-088',
+    status: 'REVIEW_PENDING_RD', assignedRD: null, assignedTO: null,
+  },
+  {
+    id: 'REV/2024/003', type: 'APPEAL_2', appId: 'FICS/2024/3800',
+    nccNo: 'NCC/FSSAI/JNPT/2024/3800', nccDate: '2024-03-15',
+    reviewDecision: 'NCC_CONFIRMED_BY_RD', importer: 'M/s Pacific Seafoods Inc',
+    product: 'Frozen Tuna Fish Fillets', hsCode: '0304.71',
+    failReason: 'Mercury: 1.8 ppm (FSSAI limit: 1.0 ppm) — both primary and counter-sample failed',
+    status: 'APPEAL_PENDING_CEO', assignedCEOTO: null,
+  },
+];
+
+// ─── Demo Users (one per role) ─────────────────────────────────────────────────
+const DEMO_USERS = [
+  { role: 'AO',    name: 'Suresh Menon',   designation: 'Authorized Officer',  org: 'FSSAI, JNPT Mumbai',       username: 'ao.suresh',  password: 'fics@2024' },
+  { role: 'TO',    name: 'Rajan Kumar',    designation: 'Technical Officer',   org: 'FSSAI, JNPT Mumbai',       username: 'to.rajan',   password: 'fics@2024' },
+  { role: 'IMP',   name: 'Ramesh Agarwal', designation: 'Importer',            org: 'M/s Global Foods Pvt Ltd', username: 'imp.ramesh', password: 'fics@2024' },
+  { role: 'CHA',   name: 'Vikram Shetty',  designation: 'CHA Representative',  org: 'ABC Customs House Agents', username: 'cha.vikram', password: 'fics@2024' },
+  { role: 'RD',    name: 'Ramesh Pillai',  designation: 'Regional Director',   org: 'FSSAI West Zone (JNPT)',   username: 'rd.pillai',  password: 'fics@2024' },
+  { role: 'CEO',   name: 'Dr. K. Prakash', designation: 'FSSAI CEO',           org: 'FSSAI Head Office, Delhi', username: 'ceo.fssai', password: 'fics@2024' },
+  { role: 'ADMIN', name: 'Pradeep Nair',   designation: 'System Administrator',org: 'FSSAI IT Cell',            username: 'admin.fics', password: 'fics@2024' },
+];
+
+// ─── Role-wise Navigation (SRS §3.2) ──────────────────────────────────────────
+const ROLE_NAV = {
+  AO: [
+    { id: 'home',      label: 'FICS Home',           icon: '🏛️' },
+    { id: 'dashboard', label: 'Dashboard',            icon: '🏠' },
+    { id: 'bin',       label: 'Application Bin',      icon: '📋' },
+    { id: 'scrutiny',  label: 'Scrutiny',             icon: '🔍', badge: 12 },
+    { id: 'payment',   label: 'Payment Verification', icon: '💳', badge: 3 },
+    { id: 'vi',        label: 'Visual Inspection',    icon: '👁️', badge: 7 },
+    { id: 'lab',       label: 'Lab Results',          icon: '🧪', badge: 5 },
+    { id: 'noc',       label: 'NOC Issuance',         icon: '📜', badge: 4 },
+    { id: 'review',    label: 'Review & Appeal',      icon: '⚖️', badge: 3 },
+    { id: 'reports',   label: 'Reports',              icon: '📊' },
+  ],
+  TO: [
+    { id: 'home',      label: 'FICS Home',          icon: '🏛️' },
+    { id: 'dashboard', label: 'My Dashboard',        icon: '🏠' },
+    { id: 'bin',       label: 'Application Bin',     icon: '📋' },
+    { id: 'scrutiny',  label: 'Scrutiny Workbench', icon: '🔍', badge: 12 },
+    { id: 'vi',        label: 'Visual Inspection',   icon: '👁️', badge: 7 },
+    { id: 'lab',       label: 'Lab Results',         icon: '🧪', badge: 5 },
+    { id: 'reports',   label: 'Reports',             icon: '📊' },
+  ],
+  IMP: [
+    { id: 'home',        label: 'FICS Home',           icon: '🏛️' },
+    { id: 'imp_apps',    label: 'My Applications',     icon: '📋', badge: 3 },
+    { id: 'imp_payment', label: 'Payments',            icon: '💳', badge: 1 },
+    { id: 'imp_clarif',  label: 'Clarifications',      icon: '❓', badge: 2 },
+    { id: 'imp_noc',     label: 'NOC / NCC Downloads', icon: '📜' },
+    { id: 'imp_review',  label: 'Review & Retest',     icon: '⚖️' },
+  ],
+  CHA: [
+    { id: 'home',        label: 'FICS Home',            icon: '🏛️' },
+    { id: 'imp_apps',    label: 'Client Applications',  icon: '📋', badge: 5 },
+    { id: 'imp_payment', label: 'Payments',             icon: '💳', badge: 2 },
+    { id: 'imp_clarif',  label: 'Clarifications',       icon: '❓', badge: 3 },
+    { id: 'imp_noc',     label: 'NOC / NCC Downloads',  icon: '📜' },
+    { id: 'imp_review',  label: 'Review & Retest',      icon: '⚖️' },
+  ],
+  RD: [
+    { id: 'home',    label: 'FICS Home',     icon: '🏛️' },
+    { id: 'review',  label: 'Review Queue',  icon: '⚖️', badge: 2 },
+    { id: 'reports', label: 'Port Reports',  icon: '📊' },
+  ],
+  CEO: [
+    { id: 'home',    label: 'FICS Home',             icon: '🏛️' },
+    { id: 'review',  label: '2nd Appeal Queue',      icon: '🏛️', badge: 1 },
+    { id: 'reports', label: 'Performance Dashboard', icon: '📊' },
+  ],
+  ADMIN: [
+    { id: 'home',            label: 'FICS Home',        icon: '🏛️' },
+    { id: 'admin_users',     label: 'User Management',  icon: '👥' },
+    { id: 'admin_masters',   label: 'Master Management',icon: '⚙️' },
+    { id: 'admin_circulars', label: 'Circulars & CMS',  icon: '📰' },
+  ],
+};
+
+// ─── Atoms ─────────────────────────────────────────────────────────────────────
+function Badge({ color = 'gray', children }) {
+  const c = {
+    green: 'bg-green-100 text-green-800', red: 'bg-red-100 text-red-800',
+    yellow: 'bg-yellow-100 text-yellow-800', blue: 'bg-blue-100 text-blue-800',
+    gray: 'bg-gray-100 text-gray-600', orange: 'bg-orange-100 text-orange-800',
+    purple: 'bg-purple-100 text-purple-800', indigo: 'bg-indigo-100 text-indigo-800',
+  };
+  return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${c[color] || c.gray}`}>{children}</span>;
+}
+
+const STAGE_MAP = {
+  scrutiny: { color: 'blue', label: 'Scrutiny' },
+  payment: { color: 'yellow', label: 'Payment' },
+  visual_inspection: { color: 'orange', label: 'Visual Inspection' },
+  lab_testing: { color: 'purple', label: 'Lab Testing' },
+  noc_pending: { color: 'indigo', label: 'NOC Pending' },
+  completed_noc: { color: 'green', label: 'NOC Issued' },
+  completed_ncc: { color: 'red', label: 'NCC Issued' },
+  rejected: { color: 'red', label: 'Rejected' },
+};
+function StageBadge({ stage }) {
+  const s = STAGE_MAP[stage] || { color: 'gray', label: stage };
+  return <Badge color={s.color}>{s.label}</Badge>;
+}
+
+function Field({ label, value }) {
+  return (
+    <div>
+      <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-none mb-0.5">{label}</dt>
+      <dd className="text-sm text-gray-900 font-medium">{value ?? '—'}</dd>
+    </div>
+  );
+}
+
+function Card({ title, children, className = '', action }) {
+  return (
+    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 ${className}`}>
+      {title && (
+        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-gray-800">{title}</h3>
+          {action && <div>{action}</div>}
+        </div>
+      )}
+      <div className="p-4">{children}</div>
+    </div>
+  );
+}
+
+function Btn({ children, onClick, color = 'blue', size = 'sm', disabled = false, outline = false, full = false }) {
+  const sz = { xs: 'px-2.5 py-1.5 text-xs', sm: 'px-3 py-2 text-sm', md: 'px-4 py-2 text-sm', lg: 'px-5 py-2.5 text-base' };
+  const solid = { blue: 'bg-blue-600 hover:bg-blue-700 text-white', green: 'bg-green-600 hover:bg-green-700 text-white', red: 'bg-red-600 hover:bg-red-700 text-white', yellow: 'bg-yellow-500 hover:bg-yellow-600 text-white', orange: 'bg-orange-500 hover:bg-orange-600 text-white', gray: 'bg-gray-100 hover:bg-gray-200 text-gray-700', indigo: 'bg-indigo-600 hover:bg-indigo-700 text-white', purple: 'bg-purple-600 hover:bg-purple-700 text-white' };
+  const outln = { blue: 'border border-blue-500 text-blue-600 hover:bg-blue-50', red: 'border border-red-500 text-red-600 hover:bg-red-50', green: 'border border-green-500 text-green-600 hover:bg-green-50', gray: 'border border-gray-300 text-gray-600 hover:bg-gray-50', yellow: 'border border-yellow-500 text-yellow-600 hover:bg-yellow-50' };
+  const style = outline ? (outln[color] || outln.gray) : (solid[color] || solid.blue);
+  return (
+    <button onClick={onClick} disabled={disabled}
+      className={`inline-flex items-center font-medium rounded transition-colors focus:outline-none ${sz[size]} ${style} ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'} ${full ? 'w-full justify-center' : ''}`}>
+      {children}
+    </button>
+  );
+}
+
+function Modal({ title, children, onClose, size = 'md' }) {
+  const w = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' };
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className={`bg-white rounded-xl shadow-2xl w-full ${w[size]} max-h-[90vh] flex flex-col`}>
+        <div className="flex items-center justify-between px-6 py-4 border-b flex-shrink-0">
+          <h2 className="text-sm font-semibold text-gray-900">{title}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-xl leading-none">&times;</button>
+        </div>
+        <div className="px-6 py-4 overflow-y-auto">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function InfoBox({ type = 'info', children }) {
+  const styles = {
+    info: 'bg-blue-50 border-blue-200 text-blue-800',
+    warn: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+    danger: 'bg-red-50 border-red-200 text-red-800',
+    success: 'bg-green-50 border-green-200 text-green-800',
+  };
+  const icons = { info: 'ℹ️', warn: '⚠️', danger: '❌', success: '✅' };
+  return <div className={`p-3 border rounded-lg text-xs flex gap-2 ${styles[type]}`}><span>{icons[type]}</span><div>{children}</div></div>;
+}
+
+// ─── Sidebar ───────────────────────────────────────────────────────────────────
+function Sidebar({ active, go, currentUser, onLogout }) {
+  const nav = ROLE_NAV[currentUser?.role] ?? ROLE_NAV.AO;
+  const roleColor = { AO: 'text-green-400', TO: 'text-blue-400', IMP: 'text-yellow-400', CHA: 'text-orange-400', RD: 'text-purple-400', CEO: 'text-red-400', ADMIN: 'text-gray-400' };
+  return (
+    <aside className="w-52 bg-gray-900 text-white flex flex-col flex-shrink-0 h-full">
+      <div className="px-4 py-3.5 border-b border-gray-700">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-green-500 rounded flex items-center justify-center text-xs font-bold">F</div>
+          <div>
+            <div className="text-xs font-bold">FICS Portal</div>
+            <div className="text-xs text-gray-400">FSSAI v3.0</div>
+          </div>
+        </div>
+      </div>
+      <div className="px-3 py-2 border-b border-gray-700 text-xs">
+        <div className={`font-semibold ${roleColor[currentUser?.role] ?? 'text-green-400'}`}>{currentUser?.role} — {currentUser?.name}</div>
+        <div className="text-gray-400 text-[10px] mt-0.5 leading-tight">{currentUser?.org}</div>
+      </div>
+      <nav className="flex-1 px-2 py-2 space-y-0.5 overflow-y-auto">
+        {nav.map(n => (
+          <button key={n.id} onClick={() => go(n.id)}
+            className={`w-full text-left flex items-center gap-2 px-3 py-2 rounded text-xs font-medium transition-colors ${active === n.id ? 'bg-green-600 text-white' : 'text-gray-300 hover:bg-gray-700'}`}>
+            <span>{n.icon}</span>
+            <span className="flex-1">{n.label}</span>
+            {n.badge && <span className="bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center text-[10px]">{n.badge}</span>}
+          </button>
+        ))}
+      </nav>
+      <button onClick={onLogout} className="mx-3 mb-2 mt-1 flex items-center gap-2 px-3 py-2 rounded text-xs font-medium text-gray-400 hover:bg-gray-700 hover:text-white transition-colors">
+        <span>🚪</span><span>Logout</span>
+      </button>
+      <div className="px-3 py-2 border-t border-gray-700 text-xs text-gray-500">FICS v3.0 • FSSAI</div>
+    </aside>
+  );
+}
+
+function PageHeader({ title, subtitle, actions }) {
+  return (
+    <div className="flex items-start justify-between mb-5">
+      <div><h1 className="text-lg font-bold text-gray-900">{title}</h1>{subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}</div>
+      {actions && <div className="flex gap-2">{actions}</div>}
+    </div>
+  );
+}
+
+// ─── Screen 1: Dashboard ───────────────────────────────────────────────────────
+function Dashboard({ go }) {
+  return (
+    <div>
+      <PageHeader title="Officer Dashboard" subtitle="FICS Processing — JNPT Mumbai | Today: 30 Apr 2024" />
+      <div className="grid grid-cols-6 gap-3 mb-5">
+        {[
+          { label: 'Scrutiny Pending', val: 12, color: 'bg-blue-500', icon: '🔍', screen: 'scrutiny' },
+          { label: 'DD Verification', val: 3, color: 'bg-yellow-500', icon: '💳', screen: 'payment' },
+          { label: 'VI Pending', val: 7, color: 'bg-orange-500', icon: '👁️', screen: 'vi' },
+          { label: 'Lab Results Due', val: 5, color: 'bg-purple-500', icon: '🧪', screen: 'lab' },
+          { label: 'NOC Pending', val: 4, color: 'bg-indigo-500', icon: '📜', screen: 'noc' },
+          { label: 'Completed Today', val: 8, color: 'bg-green-500', icon: '✅', screen: 'reports' },
+        ].map(s => (
+          <div key={s.label} onClick={() => go(s.screen)} className="bg-white rounded-lg border border-gray-200 p-3 cursor-pointer hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-lg">{s.icon}</span>
+              <span className={`text-white text-xs font-bold px-2 py-0.5 rounded-full ${s.color}`}>{s.val}</span>
+            </div>
+            <div className="text-xs text-gray-500 leading-tight">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <Card title="⚡ Pending Actions — Immediate Attention">
+          <div className="space-y-2">
+            {[
+              { msg: 'FICS/2024/3821 — SWIFT app awaiting scrutiny assignment', btn: 'Scrutiny', screen: 'scrutiny', id: 'FICS/2024/3821', color: 'blue' },
+              { msg: 'FICS/2024/3820 — DD payment pending AO verification', btn: 'Verify DD', screen: 'payment', id: 'FICS/2024/3820', color: 'yellow' },
+              { msg: 'FICS/2024/3819 — VI discrepancy (rectifiable) — action needed', btn: 'VI Action', screen: 'vi', id: 'FICS/2024/3819', color: 'orange' },
+              { msg: 'FICS/2024/3818 — Lab FAIL result — Aflatoxin exceeded', btn: 'Review', screen: 'lab', id: 'FICS/2024/3818', color: 'red' },
+              { msg: 'FICS/2024/3817 — TO recommended NOC — AO approval needed', btn: 'Issue NOC', screen: 'noc', id: 'FICS/2024/3817', color: 'green' },
+            ].map(a => (
+              <div key={a.id} className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0 gap-2">
+                <span className="text-xs text-gray-700 flex-1">{a.msg}</span>
+                <Btn size="xs" color={a.color} onClick={() => go(a.screen, a.id)}>{a.btn}</Btn>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card title="Applications in Pipeline">
+          <table className="w-full text-xs">
+            <thead><tr className="text-gray-400 border-b">
+              <th className="text-left py-1.5">App ID</th><th className="text-left py-1.5">Importer</th><th className="text-left py-1.5">Source</th><th className="text-left py-1.5">Stage</th>
+            </tr></thead>
+            <tbody>{APPS.map(a => (
+              <tr key={a.id} className="border-b border-gray-50 hover:bg-gray-50 cursor-pointer" onClick={() => go('bin', a.id)}>
+                <td className="py-1.5 font-mono text-blue-600 text-xs">{a.id.split('/').slice(1).join('/')}</td>
+                <td className="py-1.5 truncate max-w-[120px]">{a.importer.replace('M/s ', '')}</td>
+                <td className="py-1.5"><Badge color={a.source === 'SWIFT' ? 'indigo' : 'gray'}>{a.source}</Badge></td>
+                <td className="py-1.5"><StageBadge stage={a.stage} /></td>
+              </tr>
+            ))}</tbody>
+          </table>
+        </Card>
+      </div>
+
+      <Card title="Application Stage Pipeline — Current Flow">
+        <div className="flex items-center gap-1.5 text-xs overflow-x-auto pb-1">
+          {[
+            { label: 'Scrutiny', count: 12, color: 'bg-blue-500' },
+            { label: 'Payment', count: 8, color: 'bg-yellow-500' },
+            { label: 'Visual Inspection', count: 7, color: 'bg-orange-500' },
+            { label: 'Lab Testing', count: 5, color: 'bg-purple-500' },
+            { label: 'NOC Pending', count: 4, color: 'bg-indigo-500' },
+            { label: 'NOC Issued', count: 48, color: 'bg-green-500' },
+            { label: 'NCC Issued', count: 6, color: 'bg-red-500' },
+          ].map((s, i, arr) => (
+            <div key={s.label} className="flex items-center gap-1.5 flex-shrink-0">
+              <div className={`${s.color} text-white rounded px-2.5 py-1.5 flex flex-col items-center min-w-[80px]`}>
+                <span className="text-lg font-bold leading-none">{s.count}</span>
+                <span className="text-[10px] leading-tight mt-0.5 text-center">{s.label}</span>
+              </div>
+              {i < arr.length - 1 && <span className="text-gray-400 text-base">→</span>}
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ─── Screen 2: Application Bin ─────────────────────────────────────────────────
+function ApplicationBin({ go, selectedId }) {
+  const [tab, setTab] = useState('all');
+  const tabs = [
+    { id: 'all', label: 'All' },
+    { id: 'scrutiny', label: 'Scrutiny' },
+    { id: 'payment', label: 'Payment' },
+    { id: 'visual_inspection', label: 'Visual Inspection' },
+    { id: 'lab_testing', label: 'Lab Testing' },
+    { id: 'noc_pending', label: 'NOC Pending' },
+  ];
+  const list = tab === 'all' ? APPS : APPS.filter(a => a.stage === tab);
+  const actionMap = {
+    scrutiny: { label: 'Scrutiny Action', screen: 'scrutiny', color: 'blue' },
+    payment: { label: 'Verify Payment', screen: 'payment', color: 'yellow' },
+    visual_inspection: { label: 'VI Action', screen: 'vi', color: 'orange' },
+    lab_testing: { label: 'Lab Review', screen: 'lab', color: 'purple' },
+    noc_pending: { label: 'Issue NOC', screen: 'noc', color: 'indigo' },
+  };
+  return (
+    <div>
+      <PageHeader title="Application Bin" subtitle="All FICS applications — full processing queue" />
+      <div className="flex border-b border-gray-200 mb-4">
+        {tabs.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)}
+            className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${tab === t.id ? 'border-green-600 text-green-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+      <Card>
+        <table className="w-full text-xs">
+          <thead><tr className="bg-gray-50 border-b text-gray-500">
+            {['App ID / ARN', 'Importer / IEC', 'Type', 'Source', 'Port', 'Assigned TO', 'Stage', 'Action'].map(h => (
+              <th key={h} className="text-left px-3 py-2">{h}</th>
+            ))}
+          </tr></thead>
+          <tbody>
+            {list.map(a => {
+              const act = actionMap[a.stage];
+              return (
+                <tr key={a.id} className={`border-b border-gray-100 hover:bg-blue-50/30 ${selectedId === a.id ? 'bg-blue-50' : ''}`}>
+                  <td className="px-3 py-2.5">
+                    <div className="font-mono text-blue-600 font-semibold">{a.id}</div>
+                    <div className="text-gray-400">{a.arn}</div>
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <div className="font-medium text-gray-900">{a.importer}</div>
+                    <div className="text-gray-400">IEC: {a.iec}</div>
+                  </td>
+                  <td className="px-3 py-2.5">{a.importType}</td>
+                  <td className="px-3 py-2.5"><Badge color={a.source === 'SWIFT' ? 'indigo' : 'gray'}>{a.source}</Badge></td>
+                  <td className="px-3 py-2.5">{a.port}</td>
+                  <td className="px-3 py-2.5">{a.assignedTO ?? <span className="text-gray-400 italic">Unassigned</span>}</td>
+                  <td className="px-3 py-2.5"><StageBadge stage={a.stage} /></td>
+                  <td className="px-3 py-2.5">
+                    {act && <Btn size="xs" color={act.color} onClick={() => go(act.screen, a.id)}>{act.label}</Btn>}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </Card>
+    </div>
+  );
+}
+
+// ─── Screen 3: Scrutiny ────────────────────────────────────────────────────────
+function ScrutinyScreen({ go, selectedId }) {
+  const pending = APPS.filter(a => a.stage === 'scrutiny');
+  const [sel, setSel] = useState(selectedId ? APPS.find(a => a.id === selectedId) : pending[0]);
+  const [decision, setDecision] = useState(null);
+  const [itemDecisions, setItemDecisions] = useState({});
+  const [assignTO, setAssignTO] = useState('');
+  const [fips, setFips] = useState(false);
+  const [clarText, setClarText] = useState('');
+  const [rejectReason, setRejectReason] = useState('');
+  const [modal, setModal] = useState(null);
+
+  const DECISIONS = [
+    { id: 'ACCEPT', label: 'Accept', color: 'green', icon: '✅', desc: 'Clear for Payment & Visual Inspection' },
+    { id: 'REJECT', label: 'Reject', color: 'red', icon: '🚫', desc: 'Application fails — forfeited' },
+    { id: 'CLARIFICATION', label: 'Send for Clarification', color: 'yellow', icon: '❓', desc: 'Request info from CHA/Importer' },
+    { id: 'NOT_IN_SCOPE', label: 'Not in Scope', color: 'gray', icon: '∅', desc: 'Item not under FSSAI jurisdiction' },
+    { id: 'SIMILAR_PRODUCT', label: 'Similar Product', color: 'purple', icon: '≈', desc: 'Same batch — multiple items (SWIFT)' },
+  ];
+
+  return (
+    <div>
+      <PageHeader title="Scrutiny" subtitle="Review applications and take scrutiny decisions per the flow" />
+      <div className="grid grid-cols-4 gap-4">
+        {/* Queue List */}
+        <div className="col-span-1 space-y-2">
+          <div className="text-xs font-semibold text-gray-500 uppercase mb-2">Pending Scrutiny ({pending.length})</div>
+          {pending.map(a => (
+            <div key={a.id} onClick={() => setSel(a)}
+              className={`p-3 rounded-lg border cursor-pointer transition-all ${sel?.id === a.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white hover:border-blue-300'}`}>
+              <div className="text-xs font-mono font-semibold text-blue-700">{a.id}</div>
+              <div className="text-xs text-gray-600 mt-0.5 truncate">{a.importer}</div>
+              <div className="flex gap-1 mt-1.5">
+                <Badge color={a.source === 'SWIFT' ? 'indigo' : 'gray'}>{a.source}</Badge>
+                <Badge color="gray">{a.importType}</Badge>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Detail + Actions */}
+        {sel && (
+          <div className="col-span-3 space-y-4">
+            {/* App Summary */}
+            <Card title={`Application — ${sel.id}`}>
+              <div className="grid grid-cols-4 gap-3">
+                <Field label="ARN" value={sel.arn} />
+                <Field label="BE Number" value={sel.be} />
+                <Field label="BE Date" value={sel.beDate} />
+                <Field label="Import Type" value={sel.importType} />
+                <Field label="Importer" value={sel.importer} />
+                <Field label="IEC Code" value={sel.iec} />
+                <Field label="CHA" value={sel.cha} />
+                <Field label="Port" value={sel.port} />
+              </div>
+            </Card>
+
+            {/* Items */}
+            <Card title="Consignment Items — Item-wise Scrutiny Decision"
+              action={
+                <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                  <input type="checkbox" checked={fips} onChange={e => setFips(e.target.checked)} className="rounded" />
+                  <span className="font-medium text-orange-700">FIPS — No Inspection Required</span>
+                </label>
+              }>
+              {fips && <InfoBox type="warn" className="mb-3">FIPS flag set: On Acceptance, AO will directly generate NOC without Visual Inspection or Lab Testing.</InfoBox>}
+              <table className="w-full text-xs">
+                <thead><tr className="bg-gray-50 border-b text-gray-500">
+                  {['#', 'HS Code', 'Product Description', 'Qty / Value', 'Country', 'Mfg Date', 'Exp Date', 'Item Decision'].map(h => (
+                    <th key={h} className="text-left px-3 py-2">{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {sel.items.map(item => (
+                    <tr key={item.sno} className="border-b border-gray-100">
+                      <td className="px-3 py-2.5">{item.sno}</td>
+                      <td className="px-3 py-2.5 font-mono text-blue-700">{item.hsCode}</td>
+                      <td className="px-3 py-2.5 font-medium">{item.product}</td>
+                      <td className="px-3 py-2.5">{item.qty}<br /><span className="text-gray-400">{item.value}</span></td>
+                      <td className="px-3 py-2.5">{item.country}</td>
+                      <td className="px-3 py-2.5">{item.mfgDate}</td>
+                      <td className="px-3 py-2.5">{item.expDate}</td>
+                      <td className="px-3 py-2.5">
+                        <select value={itemDecisions[item.sno] || ''} onChange={e => setItemDecisions(p => ({ ...p, [item.sno]: e.target.value }))}
+                          className="text-xs border border-gray-300 rounded px-2 py-1">
+                          <option value="">-- Select --</option>
+                          <option value="ACCEPT">Accept</option>
+                          <option value="REJECT">Reject</option>
+                          <option value="NOT_IN_SCOPE">Not in Scope</option>
+                          <option value="SIMILAR">Similar Product</option>
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Card>
+
+            {/* Documents */}
+            <Card title="Submitted Documents">
+              <div className="flex flex-wrap gap-2">
+                {sel.documents.map(d => (
+                  <span key={d} className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded border border-blue-200 cursor-pointer hover:bg-blue-100">
+                    📄 {d} <span className="text-blue-400">↗</span>
+                  </span>
+                ))}
+              </div>
+            </Card>
+
+            {/* Assign TO */}
+            <Card title="Assign Technical Officer for Scrutiny">
+              <div className="flex items-center gap-3">
+                <select value={assignTO} onChange={e => setAssignTO(e.target.value)}
+                  className="text-sm border border-gray-300 rounded px-3 py-2 flex-1">
+                  <option value="">-- Select TO for Scrutiny --</option>
+                  {OFFICERS.map(o => <option key={o}>{o}</option>)}
+                </select>
+                <Btn color="blue">Assign TO</Btn>
+                {sel.assignedTO && <Btn color="gray" outline>Recall from TO</Btn>}
+              </div>
+              {sel.assignedTO && <p className="text-xs text-gray-500 mt-2">Currently assigned: <strong>{sel.assignedTO}</strong></p>}
+              <InfoBox type="info" className="mt-3">If no TO assigned, AO performs scrutiny directly. All TO decisions require AO verification before taking effect.</InfoBox>
+            </Card>
+
+            {/* Clarification History */}
+            <Card title="Query / Clarification History">
+              {sel.clarifications.length === 0
+                ? <p className="text-xs text-gray-400 italic">No clarifications raised for this application.</p>
+                : sel.clarifications.map((c, i) => (
+                  <div key={i} className="text-xs border rounded p-2.5 mb-2 bg-yellow-50">
+                    <div className="font-medium text-yellow-800">Query #{i + 1}: {c.query}</div>
+                    <div className="text-gray-500 mt-1">Response: {c.response || <em>Awaiting response from CHA/Importer</em>}</div>
+                  </div>
+                ))
+              }
+            </Card>
+
+            {/* Scrutiny Decision Panel */}
+            <Card title="Scrutiny Decision — Select Overall Application Outcome">
+              <div className="grid grid-cols-5 gap-2 mb-4">
+                {DECISIONS.map(d => (
+                  <div key={d.id} onClick={() => setDecision(d.id)}
+                    className={`p-3 border-2 rounded-lg cursor-pointer text-center transition-all ${decision === d.id ? 'border-blue-500 bg-blue-50 shadow-sm' : 'border-gray-200 hover:border-gray-400 bg-white'}`}>
+                    <div className="text-xl mb-1">{d.icon}</div>
+                    <div className="text-xs font-semibold text-gray-800 leading-tight">{d.label}</div>
+                    <div className="text-[10px] text-gray-400 mt-1 leading-tight">{d.desc}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Btn color="gray" outline>Save Draft</Btn>
+                <Btn color="yellow" outline onClick={() => setModal('CLARIFICATION')}>Raise Query to CHA</Btn>
+                <Btn color="green" disabled={!decision} onClick={() => setModal('CONFIRM')}>Submit Scrutiny Decision</Btn>
+              </div>
+            </Card>
+          </div>
+        )}
+      </div>
+
+      {/* Clarification Modal */}
+      {modal === 'CLARIFICATION' && (
+        <Modal title="Send for Clarification — Query to CHA/Importer" onClose={() => setModal(null)}>
+          <InfoBox type="info">The application will be sent back to CHA/Importer. They must fill in missing details and re-submit. The re-filled application goes back to AO and scrutiny recommences.</InfoBox>
+          <div className="mt-3">
+            <label className="block text-xs font-medium text-gray-700 mb-1">Clarification Required *</label>
+            <textarea rows={4} value={clarText} onChange={e => setClarText(e.target.value)}
+              placeholder="Describe missing information or details required from CHA/Importer..."
+              className="w-full text-sm border border-gray-300 rounded px-3 py-2" />
+          </div>
+          <div className="flex gap-2 mt-4 justify-end">
+            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
+            <Btn color="yellow">Send to CHA/Importer</Btn>
+          </div>
+        </Modal>
+      )}
+
+      {/* Reject Modal */}
+      {modal === 'REJECT' && (
+        <Modal title="Reject Application" onClose={() => setModal(null)}>
+          <InfoBox type="danger"><strong>Irreversible action.</strong> Application will be forfeited. Consignment cannot proceed through FICS. For SWIFT applications, NCC/OSC will be sent to ICEGATE via FSSAI API 3.</InfoBox>
+          <div className="mt-3">
+            <label className="block text-xs font-medium text-gray-700 mb-1">Rejection Reason *</label>
+            <textarea rows={3} value={rejectReason} onChange={e => setRejectReason(e.target.value)}
+              placeholder="State the reason for rejection (wrong info / non-compliant product / document deficit)..."
+              className="w-full text-sm border border-gray-300 rounded px-3 py-2" />
+          </div>
+          <div className="flex gap-2 mt-4 justify-end">
+            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
+            <Btn color="red" disabled={!rejectReason}>Confirm Rejection</Btn>
+          </div>
+        </Modal>
+      )}
+
+      {/* Confirm Modal */}
+      {modal === 'CONFIRM' && (
+        <Modal title="Confirm Scrutiny Decision" onClose={() => setModal(null)}>
+          {decision === 'REJECT' ? (
+            <div className="mb-3">
+              <InfoBox type="danger">You are about to REJECT application <strong>{sel?.id}</strong>. This will forfeit the application.</InfoBox>
+              <div className="mt-3">
+                <label className="block text-xs font-medium text-gray-700 mb-1">Rejection Reason *</label>
+                <textarea rows={3} value={rejectReason} onChange={e => setRejectReason(e.target.value)}
+                  placeholder="Rejection reason..." className="w-full text-sm border border-gray-300 rounded px-3 py-2" />
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-gray-700">Submitting decision: <strong className="text-blue-700">{decision}</strong> for <strong>{sel?.id}</strong></p>
+              {fips && decision === 'ACCEPT' && <InfoBox type="warn">FIPS flag active — NOC will be directly generated by AO without Visual Inspection.</InfoBox>}
+              {decision === 'ACCEPT' && !fips && <InfoBox type="success">Application will be sent to importer for Payment. After payment, Visual Inspection will be scheduled.</InfoBox>}
+              {decision === 'NOT_IN_SCOPE' && <InfoBox type="info">Application will be marked Not in Scope. For SWIFT, OSC certificate sent to ICEGATE.</InfoBox>}
+            </div>
+          )}
+          <div className="flex gap-2 mt-4 justify-end">
+            <Btn color="gray" outline onClick={() => setModal(null)}>Go Back</Btn>
+            <Btn color={decision === 'REJECT' ? 'red' : 'green'} disabled={decision === 'REJECT' && !rejectReason}
+              onClick={() => setModal(null)}>Confirm & Submit</Btn>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+// ─── Screen 4: Payment Verification ───────────────────────────────────────────
+function PaymentVerification({ go, selectedId }) {
+  const pending = APPS.filter(a => a.stage === 'payment');
+  const [sel, setSel] = useState(selectedId ? APPS.find(a => a.id === selectedId) : pending[0]);
+  const [ddAction, setDdAction] = useState(null);
+  const [rejectNote, setRejectNote] = useState('');
+  const [modal, setModal] = useState(false);
+
+  return (
+    <div>
+      <PageHeader title="Payment Verification" subtitle="AO verifies Demand Draft payments. Online payments are auto-verified." />
+      <div className="grid grid-cols-4 gap-4">
+        <div className="col-span-1 space-y-2">
+          <div className="text-xs font-semibold text-gray-500 uppercase mb-2">DD Pending ({pending.length})</div>
+          {pending.map(a => (
+            <div key={a.id} onClick={() => setSel(a)}
+              className={`p-3 rounded-lg border cursor-pointer bg-white ${sel?.id === a.id ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 hover:border-yellow-300'}`}>
+              <div className="text-xs font-mono font-semibold text-blue-700">{a.id}</div>
+              <div className="text-xs text-gray-600 truncate">{a.importer.replace('M/s ', '')}</div>
+              <div className="text-xs text-gray-400 mt-1">DD: {a.payment?.ddNo}</div>
+              <div className="text-xs text-gray-400">{a.payment?.bank}</div>
+            </div>
+          ))}
+
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="text-xs font-semibold text-blue-800 mb-1.5">Payment Rules</div>
+            <ul className="text-xs text-blue-700 space-y-1 list-disc list-inside">
+              <li>Online payment: auto-verified</li>
+              <li>DD: AO must verify manually</li>
+              <li>Payment mandatory before VI</li>
+              <li>Retest: online payment only</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="col-span-3 space-y-4">
+          {sel?.payment && (
+            <>
+              <Card title="Application & Payment Summary">
+                <div className="grid grid-cols-4 gap-3 mb-4">
+                  <Field label="Application ID" value={sel.id} />
+                  <Field label="Importer" value={sel.importer} />
+                  <Field label="Port" value={sel.port} />
+                  <Field label="CHA" value={sel.cha} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="text-xs font-semibold text-yellow-800 mb-3">Demand Draft Details</div>
+                    <dl className="grid grid-cols-2 gap-2">
+                      <Field label="Mode" value="Demand Draft" />
+                      <Field label="DD Number" value={sel.payment.ddNo} />
+                      <Field label="Bank" value={sel.payment.bank} />
+                      <Field label="Amount" value={sel.payment.amount} />
+                    </dl>
+                  </div>
+                  <div>
+                    <div className="text-xs font-medium text-gray-600 mb-2">Uploaded DD Scan / Receipt</div>
+                    <div className="h-36 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center flex-col gap-2 text-gray-400">
+                      <span className="text-2xl">📄</span>
+                      <span className="text-xs">DD_Scan_{sel.id.replace(/\//g, '_')}.pdf</span>
+                      <Btn size="xs" color="blue" outline>View Document</Btn>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              <Card title="AO Verification Decision">
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div onClick={() => setDdAction('ACCEPT')}
+                    className={`p-4 border-2 rounded-lg cursor-pointer text-center transition-all ${ddAction === 'ACCEPT' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-400'}`}>
+                    <div className="text-3xl mb-2">✅</div>
+                    <div className="text-sm font-semibold text-green-700">Accept Payment</div>
+                    <div className="text-xs text-gray-500 mt-1">DD verified — application moves to Visual Inspection scheduling</div>
+                  </div>
+                  <div onClick={() => setDdAction('REJECT')}
+                    className={`p-4 border-2 rounded-lg cursor-pointer text-center transition-all ${ddAction === 'REJECT' ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-red-400'}`}>
+                    <div className="text-3xl mb-2">❌</div>
+                    <div className="text-sm font-semibold text-red-700">Reject Payment</div>
+                    <div className="text-xs text-gray-500 mt-1">Invalid DD — application sent back to CHA/Importer</div>
+                  </div>
+                </div>
+                {ddAction === 'REJECT' && (
+                  <div className="mb-4">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Rejection Reason *</label>
+                    <textarea rows={2} value={rejectNote} onChange={e => setRejectNote(e.target.value)}
+                      placeholder="State reason for rejecting the DD..."
+                      className="w-full text-sm border border-gray-300 rounded px-3 py-2" />
+                  </div>
+                )}
+                <div className="flex gap-2 justify-end">
+                  <Btn color="gray" outline>Cancel</Btn>
+                  <Btn color={ddAction === 'ACCEPT' ? 'green' : 'red'} disabled={!ddAction} onClick={() => setModal(true)}>
+                    {ddAction === 'ACCEPT' ? '✅ Accept & Forward for VI' : '❌ Reject & Return to Applicant'}
+                  </Btn>
+                </div>
+              </Card>
+            </>
+          )}
+        </div>
+      </div>
+
+      {modal && (
+        <Modal title="Confirm Payment Verification" onClose={() => setModal(false)}>
+          <p className="text-sm text-gray-700 mb-4">Confirm <strong>{ddAction}</strong> of DD #{sel?.payment?.ddNo} for {sel?.id}?</p>
+          {ddAction === 'ACCEPT' && <InfoBox type="success">Payment accepted. Application will proceed to Visual Inspection. AO will assign TO and schedule appointment.</InfoBox>}
+          {ddAction === 'REJECT' && <InfoBox type="danger">Payment rejected. Application returned to CHA/Importer to re-submit payment.</InfoBox>}
+          <div className="flex gap-2 mt-4 justify-end">
+            <Btn color="gray" outline onClick={() => setModal(false)}>Cancel</Btn>
+            <Btn color={ddAction === 'ACCEPT' ? 'green' : 'red'} onClick={() => setModal(false)}>Confirm</Btn>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+// ─── Screen 5: Visual Inspection ──────────────────────────────────────────────
+function VisualInspection({ go, selectedId }) {
+  const pending = APPS.filter(a => a.stage === 'visual_inspection');
+  const [sel, setSel] = useState(selectedId ? APPS.find(a => a.id === selectedId) : pending[0]);
+  const [step, setStep] = useState('appointment');
+  const [modal, setModal] = useState(null);
+
+  const steps = [
+    { id: 'appointment', label: '1. Appointment', icon: '📅' },
+    { id: 'sampling', label: '2. Sample ID Gen.', icon: '🧫' },
+    { id: 'vi_result', label: '3. VI Result Entry', icon: '🔬' },
+    { id: 'discrepancy', label: '4. Discrepancy', icon: '⚠️' },
+    { id: 'forward_lab', label: '5. Forward to Lab', icon: '🧪' },
+  ];
+
+  return (
+    <div>
+      <PageHeader title="Visual Inspection" subtitle="Manage appointment → sample ID → VI result → discrepancy → forward to lab" />
+      <div className="grid grid-cols-4 gap-4">
+        <div className="col-span-1 space-y-2">
+          <div className="text-xs font-semibold text-gray-500 uppercase mb-2">VI Queue ({pending.length})</div>
+          {pending.map(a => (
+            <div key={a.id} onClick={() => setSel(a)}
+              className={`p-3 rounded-lg border cursor-pointer bg-white ${sel?.id === a.id ? 'border-orange-500 bg-orange-50' : 'border-gray-200 hover:border-orange-300'}`}>
+              <div className="text-xs font-mono font-semibold text-blue-700">{a.id}</div>
+              <div className="text-xs text-gray-600 truncate">{a.importer.replace('M/s ', '')}</div>
+              <div className="text-xs text-gray-500 mt-1">TO: {a.assignedTO ?? 'Unassigned'}</div>
+              <StageBadge stage={a.stage} />
+            </div>
+          ))}
+        </div>
+
+        {sel && (
+          <div className="col-span-3">
+            {/* Step Nav */}
+            <div className="flex border-b border-gray-200 mb-4 bg-white rounded-t-lg overflow-hidden">
+              {steps.map(s => (
+                <button key={s.id} onClick={() => setStep(s.id)}
+                  className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors flex-1 justify-center ${step === s.id ? 'border-orange-500 text-orange-700 bg-orange-50' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                  {s.icon} {s.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Step 1: Appointment */}
+            {step === 'appointment' && (
+              <div className="space-y-4">
+                <Card title="Assign Technical Officer for Visual Inspection">
+                  <div className="flex gap-3 items-center">
+                    <select className="text-sm border border-gray-300 rounded px-3 py-2 flex-1">
+                      <option>-- Select TO for Visual Inspection --</option>
+                      {OFFICERS.map(o => <option key={o}>{o}</option>)}
+                    </select>
+                    <Btn color="blue">Assign TO</Btn>
+                    <Btn color="gray" outline>Re-assign Different TO</Btn>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Currently assigned: <strong>{sel.assignedTO}</strong></p>
+                </Card>
+
+                <Card title="Schedule Inspection Appointment">
+                  <div className="grid grid-cols-3 gap-3 mb-3">
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">Inspection Date</label>
+                      <input type="date" defaultValue="2024-04-15" className="w-full text-sm border border-gray-300 rounded px-3 py-2" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">Inspection Time</label>
+                      <input type="time" defaultValue="10:00" className="w-full text-sm border border-gray-300 rounded px-3 py-2" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">CFS Location</label>
+                      <input type="text" defaultValue={sel.cfsLocation} className="w-full text-sm border border-gray-300 rounded px-3 py-2" />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Btn color="blue">Send Appointment to CHA/Importer</Btn>
+                    <Btn color="orange" outline onClick={() => setModal('POSTPONE')}>Postpone Date</Btn>
+                  </div>
+                </Card>
+
+                {sel.viAppointment && (
+                  <Card title="CHA/Importer Acknowledgement Status">
+                    <div className="grid grid-cols-3 gap-3 mb-3">
+                      <Field label="Scheduled Date" value={sel.viAppointment.date} />
+                      <Field label="Scheduled Time" value={sel.viAppointment.time} />
+                      <Field label="Acknowledged at" value={sel.viAppointment.ackTime ? `${sel.viAppointment.ackTime}` : 'Not yet'} />
+                    </div>
+                    {sel.viAppointment.acknowledged ? (
+                      sel.viAppointment.ackTime > '11:00' ? (
+                        <InfoBox type="warn">
+                          <strong>Acknowledged AFTER 11:00 AM</strong> — AO approval required before inspection proceeds on scheduled date.
+                          <div className="flex gap-2 mt-2">
+                            <Btn size="xs" color="green">Approve — Proceed on Scheduled Date</Btn>
+                            <Btn size="xs" color="orange">Do Not Approve — Postpone</Btn>
+                          </div>
+                        </InfoBox>
+                      ) : (
+                        <InfoBox type="success">Acknowledged before 11:00 AM — Inspection proceeds as scheduled on {sel.viAppointment.date}.</InfoBox>
+                      )
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <Badge color="yellow">Awaiting Acknowledgement</Badge>
+                        <Btn size="xs" color="orange" onClick={() => setModal('POSTPONE')}>Postpone Inspection Date</Btn>
+                      </div>
+                    )}
+                  </Card>
+                )}
+              </div>
+            )}
+
+            {/* Step 2: Sample ID Generation */}
+            {step === 'sampling' && (
+              <Card title="Generate Unique Sample ID per Consignment Item">
+                <InfoBox type="info">TO must generate a Sample ID for each item. Each ID is unique and used to track the sample through lab testing. Multiple samples can be generated per item.</InfoBox>
+                <table className="w-full text-xs mt-3">
+                  <thead><tr className="bg-gray-50 border-b text-gray-500">
+                    {['#', 'HS Code', 'Product', 'Quantity', 'Samples Req.', 'Sample ID(s)', 'Action'].map(h => (
+                      <th key={h} className="text-left px-3 py-2">{h}</th>
+                    ))}
+                  </tr></thead>
+                  <tbody>
+                    {sel.items.map(item => (
+                      <tr key={item.sno} className="border-b border-gray-100">
+                        <td className="px-3 py-3">{item.sno}</td>
+                        <td className="px-3 py-3 font-mono text-blue-700">{item.hsCode}</td>
+                        <td className="px-3 py-3 font-medium">{item.product}</td>
+                        <td className="px-3 py-3">{item.qty}</td>
+                        <td className="px-3 py-3">
+                          <input type="number" defaultValue={1} min={1} max={5} className="w-14 text-xs border border-gray-300 rounded px-2 py-1" />
+                        </td>
+                        <td className="px-3 py-3">
+                          {item.sampleId ? <Badge color="green">{item.sampleId}</Badge> : <span className="text-gray-400 italic">Not generated</span>}
+                        </td>
+                        <td className="px-3 py-3">
+                          {item.sampleId ? <Badge color="green">✓ Generated</Badge> : <Btn size="xs" color="blue">Generate Sample ID</Btn>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="flex justify-end mt-3">
+                  <Btn color="blue">Generate All Sample IDs</Btn>
+                </div>
+              </Card>
+            )}
+
+            {/* Step 3: VI Result Entry */}
+            {step === 'vi_result' && (
+              <Card title="TO: Update Visual Inspection Result per Item">
+                <div className="text-xs text-gray-500 mb-3 p-2 bg-gray-50 rounded flex gap-4">
+                  <span>Inspection Date: <strong>{sel.viAppointment?.date}</strong></span>
+                  <span>Time: <strong>{sel.viAppointment?.time}</strong></span>
+                  <span>TO: <strong>{sel.assignedTO}</strong></span>
+                  <span>CFS: <strong>{sel.cfsLocation}</strong></span>
+                </div>
+                <table className="w-full text-xs">
+                  <thead><tr className="bg-gray-50 border-b text-gray-500">
+                    {['Sample ID', 'HS Code', 'Product', 'VI Result', 'Discrepancy Note', 'Discrepancy Type'].map(h => (
+                      <th key={h} className="text-left px-3 py-2">{h}</th>
+                    ))}
+                  </tr></thead>
+                  <tbody>
+                    {sel.items.map(item => (
+                      <tr key={item.sno} className={`border-b border-gray-100 ${item.viStatus === 'DISCREPANCY' ? 'bg-red-50' : ''}`}>
+                        <td className="px-3 py-3 font-mono text-green-700">{item.sampleId ?? '—'}</td>
+                        <td className="px-3 py-3 font-mono text-blue-700">{item.hsCode}</td>
+                        <td className="px-3 py-3">{item.product}</td>
+                        <td className="px-3 py-3">
+                          <select defaultValue={item.viStatus ?? ''} className="text-xs border border-gray-300 rounded px-2 py-1">
+                            <option value="">-- Select --</option>
+                            <option value="PASSED">Passed ✓</option>
+                            <option value="DISCREPANCY">Discrepancy Found ⚠️</option>
+                          </select>
+                        </td>
+                        <td className="px-3 py-3">
+                          <input type="text" defaultValue={item.discrepancyNote ?? ''} placeholder="Describe discrepancy..."
+                            className="text-xs border border-gray-300 rounded px-2 py-1 w-full" />
+                        </td>
+                        <td className="px-3 py-3">
+                          {item.viStatus === 'DISCREPANCY'
+                            ? <select defaultValue={item.discrepancyType ?? ''} className="text-xs border border-gray-300 rounded px-2 py-1">
+                                <option value="">-- Type --</option>
+                                <option value="RECTIFIABLE">Rectifiable</option>
+                                <option value="NON_RECTIFIABLE">Non-Rectifiable</option>
+                              </select>
+                            : <span className="text-gray-400">—</span>
+                          }
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="flex gap-2 mt-4 justify-end">
+                  <Btn color="gray" outline>Save</Btn>
+                  <Btn color="orange">Submit VI Results</Btn>
+                </div>
+              </Card>
+            )}
+
+            {/* Step 4: Discrepancy Handling */}
+            {step === 'discrepancy' && (
+              <div className="space-y-4">
+                {sel.items.filter(i => i.viStatus === 'DISCREPANCY').length === 0
+                  ? <Card><InfoBox type="success">No discrepancies recorded. Proceed to forward samples to lab.</InfoBox></Card>
+                  : sel.items.filter(i => i.viStatus === 'DISCREPANCY').map(item => (
+                    <Card key={item.sno} title={`Discrepancy — ${item.product} (${item.sampleId})`}>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Field label="Discrepancy Note" value={item.discrepancyNote} />
+                          <div className="mt-3">
+                            <dt className="text-xs font-medium text-gray-500 uppercase">Type</dt>
+                            <dd className="mt-1">
+                              <Badge color={item.discrepancyType === 'RECTIFIABLE' ? 'yellow' : 'red'}>
+                                {item.discrepancyType}
+                              </Badge>
+                            </dd>
+                          </div>
+                        </div>
+                        <div>
+                          {item.discrepancyType === 'RECTIFIABLE' ? (
+                            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg space-y-2">
+                              <div className="text-xs font-semibold text-yellow-800">Rectifiable — Actions Available</div>
+                              <Btn size="sm" color="yellow" full>Send Back to CHA/Applicant for Rectification</Btn>
+                              <Btn size="sm" color="blue" outline full>Re-assign TO for Discrepancy Verification</Btn>
+                              <Btn size="sm" color="orange" outline full>Re-assign Second TO for Re-sampling</Btn>
+                              <p className="text-xs text-gray-500 mt-1">Flow: Importer rectifies → resends to AO → AO re-assigns TO → TO verifies → Accepted or NCC</p>
+                            </div>
+                          ) : (
+                            <div className="p-3 bg-red-50 border border-red-200 rounded-lg space-y-2">
+                              <div className="text-xs font-semibold text-red-800">Non-Rectifiable — Generate NCC</div>
+                              <InfoBox type="danger">Discrepancy cannot be corrected. NCC must be generated. Application stops here.</InfoBox>
+                              <Btn size="sm" color="red" full onClick={() => setModal('NCC_VI')}>Generate NCC (Non-Conformance Certificate)</Btn>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  ))
+                }
+              </div>
+            )}
+
+            {/* Step 5: Forward to Lab */}
+            {step === 'forward_lab' && (
+              <Card title="Forward Samples to Laboratory via INFOLNET">
+                <InfoBox type="info">Labs are auto-selected on <strong>Round Robin basis</strong>. AO can override the selection. All samples collected during VI are forwarded to labs.</InfoBox>
+                <table className="w-full text-xs mt-3 mb-4">
+                  <thead><tr className="bg-gray-50 border-b text-gray-500">
+                    {['Sample ID', 'Product', 'HS Code', 'Auto-Selected Lab (Round Robin)', 'AO Override Lab'].map(h => (
+                      <th key={h} className="text-left px-3 py-2">{h}</th>
+                    ))}
+                  </tr></thead>
+                  <tbody>
+                    {sel.items.filter(i => i.viStatus !== 'DISCREPANCY' || i.discrepancyType === 'RECTIFIABLE').map(item => (
+                      <tr key={item.sno} className="border-b border-gray-100">
+                        <td className="px-3 py-3 font-mono text-green-700">{item.sampleId ?? '—'}</td>
+                        <td className="px-3 py-3">{item.product}</td>
+                        <td className="px-3 py-3 font-mono text-blue-700">{item.hsCode}</td>
+                        <td className="px-3 py-3 text-blue-700">FSSAI Referral Lab Mumbai</td>
+                        <td className="px-3 py-3">
+                          <select className="text-xs border border-gray-300 rounded px-2 py-1">
+                            <option value="">Use Auto-Selected</option>
+                            <option>FSSAI Referral Lab Delhi</option>
+                            <option>FSSAI Referral Lab Chennai</option>
+                            <option>NABL Accredited Lab Kolkata</option>
+                            <option>Referral Lab Hyderabad</option>
+                          </select>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="flex gap-2 justify-end">
+                  <Btn color="gray" outline>Cancel</Btn>
+                  <Btn color="purple">Forward Samples to Lab via INFOLNET</Btn>
+                </div>
+              </Card>
+            )}
+          </div>
+        )}
+      </div>
+
+      {modal === 'POSTPONE' && (
+        <Modal title="Postpone Inspection Date" onClose={() => setModal(null)}>
+          <p className="text-xs text-gray-500 mb-3">Update inspection date due to non-acknowledgement or AO non-approval.</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div><label className="block text-xs font-medium text-gray-700 mb-1">New Date</label>
+              <input type="date" className="w-full text-sm border border-gray-300 rounded px-3 py-2" /></div>
+            <div><label className="block text-xs font-medium text-gray-700 mb-1">New Time</label>
+              <input type="time" className="w-full text-sm border border-gray-300 rounded px-3 py-2" /></div>
+          </div>
+          <div className="flex gap-2 mt-4 justify-end">
+            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
+            <Btn color="orange">Update Appointment</Btn>
+          </div>
+        </Modal>
+      )}
+
+      {modal === 'NCC_VI' && (
+        <Modal title="Generate NCC — Non-Conformance Certificate" onClose={() => setModal(null)}>
+          <InfoBox type="danger">NCC will be generated for non-rectifiable discrepancy. Application stops here. SWIFT applications: NCC/OSC sent to ICEGATE via FSSAI API 3.</InfoBox>
+          <div className="mt-3">
+            <label className="block text-xs font-medium text-gray-700 mb-1">AO Remarks *</label>
+            <textarea rows={3} placeholder="Remarks for NCC generation..." className="w-full text-sm border border-gray-300 rounded px-3 py-2" />
+          </div>
+          <div className="flex gap-2 mt-4 justify-end">
+            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
+            <Btn color="red">Confirm NCC Generation</Btn>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+// ─── Screen 6: Lab Results ─────────────────────────────────────────────────────
+function LabResults({ go, selectedId }) {
+  const pending = APPS.filter(a => a.stage === 'lab_testing');
+  const [sel, setSel] = useState(selectedId ? APPS.find(a => a.id === selectedId) : pending[0]);
+  const [modal, setModal] = useState(null);
+  const [clarNote, setClarNote] = useState('');
+
+  const passAll = sel?.samples?.every(s => s.result === 'PASS');
+  const hasFail = sel?.samples?.some(s => s.result === 'FAIL');
+
+  return (
+    <div>
+      <PageHeader title="Lab Results Review" subtitle="Review INFOLNET test reports — TO recommendation and AO final decision" />
+      <div className="grid grid-cols-4 gap-4">
+        <div className="col-span-1 space-y-2">
+          <div className="text-xs font-semibold text-gray-500 uppercase mb-2">Lab Results ({pending.length})</div>
+          {pending.map(a => (
+            <div key={a.id} onClick={() => setSel(a)}
+              className={`p-3 rounded-lg border cursor-pointer bg-white ${sel?.id === a.id ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300'}`}>
+              <div className="text-xs font-mono font-semibold text-blue-700">{a.id}</div>
+              <div className="text-xs text-gray-600 truncate">{a.importer.replace('M/s ', '')}</div>
+              <div className="mt-1 flex gap-1">
+                {a.samples?.some(s => s.result === 'FAIL')
+                  ? <Badge color="red">FAIL — Action Needed</Badge>
+                  : <Badge color="green">PASS</Badge>
+                }
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {sel && (
+          <div className="col-span-3 space-y-4">
+            <Card title="Lab Test Report Summary">
+              <table className="w-full text-xs">
+                <thead><tr className="bg-gray-50 border-b text-gray-500">
+                  {['Sample ID', 'Product', 'Lab', 'Report Date', 'Result', 'Fail Reason', 'Report'].map(h => (
+                    <th key={h} className="text-left px-3 py-2">{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {sel.samples?.map(s => (
+                    <tr key={s.id} className={`border-b border-gray-100 ${s.result === 'FAIL' ? 'bg-red-50' : ''}`}>
+                      <td className="px-3 py-2.5 font-mono text-green-700">{s.id}</td>
+                      <td className="px-3 py-2.5">{sel.items.find(i => i.sno === s.itemSno)?.product}</td>
+                      <td className="px-3 py-2.5">{s.lab}</td>
+                      <td className="px-3 py-2.5">{s.reportDate}</td>
+                      <td className="px-3 py-2.5"><Badge color={s.result === 'PASS' ? 'green' : 'red'}>{s.result}</Badge></td>
+                      <td className="px-3 py-2.5 text-red-700 max-w-[180px]">{s.failReason ?? '—'}</td>
+                      <td className="px-3 py-2.5"><Btn size="xs" color="gray" outline>📄 View Report</Btn></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Card>
+
+            {/* TO Recommendation */}
+            <Card title="TO: Verify Results & Recommend to AO">
+              <InfoBox type="info">TO verifies lab results and recommends AO for final decision. If no active TO, results go directly to AO.</InfoBox>
+              <div className="mt-3">
+                {sel.toRecommendation ? (
+                  <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded">
+                    <div className="text-2xl">👨‍💼</div>
+                    <div>
+                      <div className="text-sm font-medium text-blue-900">{sel.assignedTO}</div>
+                      <div className="text-xs text-gray-600 mt-0.5">Recommendation: <Badge color="green">{sel.toRecommendation}</Badge></div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Btn color="green">Recommend NOC to AO</Btn>
+                    <Btn color="red" outline>Recommend NCC to AO</Btn>
+                    <Btn color="gray" outline onClick={() => setModal('REVERT_LAB')}>Revert to Lab for Clarification</Btn>
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            {/* AO Final Decision */}
+            <Card title="AO: Final Decision on Lab Results">
+              {passAll ? (
+                <div className="space-y-3">
+                  <InfoBox type="success">All samples passed laboratory testing. Proceed to NOC generation.</InfoBox>
+                  <div className="flex gap-2">
+                    <Btn color="green" onClick={() => go('noc', sel.id)}>✅ Approve — Proceed to NOC Generation</Btn>
+                    <Btn color="gray" outline onClick={() => setModal('REVERT_LAB')}>Revert to Lab for Clarification</Btn>
+                  </div>
+                </div>
+              ) : hasFail ? (
+                <div className="space-y-4">
+                  <InfoBox type="danger">One or more samples failed laboratory testing. Select AO action below.</InfoBox>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { icon: '📋', label: 'Generate NCC', sub: 'Stop process — Non-Conformance Certificate', color: 'red', modal: 'NCC' },
+                      { icon: '🔄', label: 'Send Counter-Sample', sub: 'Re-test at same lab (additional sample)', color: 'yellow', modal: 'COUNTER' },
+                      { icon: '🔬', label: 'Re-sampling + New VI', sub: 'Assign TO for fresh sampling and VI', color: 'orange', modal: 'RESAMPLE' },
+                    ].map(a => (
+                      <div key={a.label} onClick={() => setModal(a.modal)}
+                        className="p-3 border-2 border-gray-200 rounded-lg cursor-pointer text-center hover:border-gray-400 transition-all">
+                        <div className="text-2xl mb-1">{a.icon}</div>
+                        <div className={`text-xs font-semibold text-${a.color}-700`}>{a.label}</div>
+                        <div className="text-xs text-gray-400 mt-1 leading-tight">{a.sub}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Importer Retest Request */}
+                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="text-xs font-semibold text-yellow-800 mb-1.5">⚠️ Importer Retest Request Pending</div>
+                    <p className="text-xs text-gray-600 mb-2">CHA/Importer has applied for re-test after NCC. AO approval required. If approved, importer pays per-sample fee (online only). Lab re-acknowledges and commences re-test.</p>
+                    <div className="flex gap-2">
+                      <Btn size="sm" color="green">Approve Retest — Importer to Pay</Btn>
+                      <Btn size="sm" color="red" outline>Decline Retest Request</Btn>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Btn color="gray" outline onClick={() => setModal('REVERT_LAB')}>Revert to Lab for Clarification</Btn>
+                  </div>
+                </div>
+              ) : (
+                <InfoBox type="info">Awaiting lab results from INFOLNET...</InfoBox>
+              )}
+            </Card>
+          </div>
+        )}
+      </div>
+
+      {modal === 'NCC' && (
+        <Modal title="Generate NCC — Lab Test Failure" onClose={() => setModal(null)}>
+          <InfoBox type="danger">NCC will be issued against the consignment. Application stops here. For SWIFT, NCC/OSC sent to ICEGATE via FSSAI API 3.</InfoBox>
+          <div className="mt-3"><label className="block text-xs font-medium text-gray-700 mb-1">AO Remarks *</label>
+            <textarea rows={3} placeholder="Remarks for NCC..." className="w-full text-sm border border-gray-300 rounded px-3 py-2" /></div>
+          <div className="flex gap-2 mt-4 justify-end">
+            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
+            <Btn color="red">Confirm NCC Generation</Btn>
+          </div>
+        </Modal>
+      )}
+
+      {modal === 'REVERT_LAB' && (
+        <Modal title="Revert to Lab for Clarification" onClose={() => setModal(null)}>
+          <textarea rows={3} value={clarNote} onChange={e => setClarNote(e.target.value)}
+            placeholder="Describe clarification needed from lab..." className="w-full text-sm border border-gray-300 rounded px-3 py-2" />
+          <div className="flex gap-2 mt-4 justify-end">
+            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
+            <Btn color="blue">Send Clarification to Lab</Btn>
+          </div>
+        </Modal>
+      )}
+
+      {modal === 'COUNTER' && (
+        <Modal title="Send Counter-Samples to Lab" onClose={() => setModal(null)}>
+          <p className="text-sm text-gray-600 mb-3">Select failed samples to dispatch counter-samples for re-testing.</p>
+          {sel?.samples?.filter(s => s.result === 'FAIL').map(s => (
+            <label key={s.id} className="flex items-center gap-2 text-sm mb-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+              <input type="checkbox" defaultChecked className="rounded" />
+              <span><strong>{s.id}</strong> — {sel.items.find(i => i.sno === s.itemSno)?.product} at {s.lab}</span>
+            </label>
+          ))}
+          <div className="flex gap-2 mt-4 justify-end">
+            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
+            <Btn color="yellow">Dispatch Counter-Samples</Btn>
+          </div>
+        </Modal>
+      )}
+
+      {modal === 'RESAMPLE' && (
+        <Modal title="Arrange Re-sampling and New Visual Inspection" onClose={() => setModal(null)}>
+          <p className="text-sm text-gray-600 mb-3">Assign TO for a fresh round of sampling and another Visual Inspection.</p>
+          <select className="w-full text-sm border border-gray-300 rounded px-3 py-2 mb-3">
+            <option>-- Assign TO for Re-sampling --</option>
+            {OFFICERS.map(o => <option key={o}>{o}</option>)}
+          </select>
+          <div className="flex gap-2 justify-end">
+            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
+            <Btn color="orange">Assign TO & Schedule Re-sampling</Btn>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+// ─── Screen 7: NOC Issuance ────────────────────────────────────────────────────
+function NOCIssuance({ go, selectedId }) {
+  const pending = APPS.filter(a => a.stage === 'noc_pending');
+  const [sel, setSel] = useState(selectedId ? APPS.find(a => a.id === selectedId) : pending[0]);
+  const [certAction, setCertAction] = useState(null);
+  const [remarks, setRemarks] = useState('');
+  const [showCert, setShowCert] = useState(null);
+
+  return (
+    <div>
+      <PageHeader title="NOC / PNOC / NCC Issuance" subtitle="AO final approval after lab results — generate certificate and send to ICEGATE" />
+      <div className="grid grid-cols-4 gap-4">
+        <div className="col-span-1 space-y-2">
+          <div className="text-xs font-semibold text-gray-500 uppercase mb-2">NOC Queue ({pending.length})</div>
+          {pending.map(a => (
+            <div key={a.id} onClick={() => setSel(a)}
+              className={`p-3 rounded-lg border cursor-pointer bg-white ${sel?.id === a.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300'}`}>
+              <div className="text-xs font-mono font-semibold text-blue-700">{a.id}</div>
+              <div className="text-xs text-gray-600 truncate">{a.importer.replace('M/s ', '')}</div>
+              <div className="text-xs text-gray-400 mt-1">TO: {a.assignedTO}</div>
+              {a.toRecommendation && <Badge color="blue" className="mt-1">{a.toRecommendation}</Badge>}
+            </div>
+          ))}
+        </div>
+
+        {sel && (
+          <div className="col-span-3 space-y-4">
+            <Card title={`Final Review — ${sel.id}`}>
+              <div className="grid grid-cols-4 gap-3">
+                <Field label="ARN" value={sel.arn} />
+                <Field label="BE Number" value={sel.be} />
+                <Field label="Importer" value={sel.importer} />
+                <Field label="Port" value={sel.port} />
+              </div>
+            </Card>
+
+            {/* TO Recommendation */}
+            {sel.toRecommendation && (
+              <Card title="TO Recommendation Received">
+                <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded">
+                  <span className="text-3xl">👨‍💼</span>
+                  <div>
+                    <div className="font-medium text-blue-900 text-sm">{sel.assignedTO}</div>
+                    <div className="text-xs text-gray-600 mt-0.5">Recommendation: <Badge color="green">{sel.toRecommendation}</Badge></div>
+                    <div className="text-xs text-gray-500 mt-1">Lab results verified. All samples passed. Consignment cleared for NOC issuance by AO.</div>
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {/* Lab Results */}
+            <Card title="Lab Test Results (Final)">
+              <table className="w-full text-xs">
+                <thead><tr className="bg-gray-50 border-b text-gray-500">
+                  {['Sample ID', 'Product', 'Lab', 'Report Date', 'Result'].map(h => (
+                    <th key={h} className="text-left px-3 py-2">{h}</th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {sel.samples?.map(s => (
+                    <tr key={s.id} className="border-b border-gray-100">
+                      <td className="px-3 py-2.5 font-mono text-green-700">{s.id}</td>
+                      <td className="px-3 py-2.5">{sel.items.find(i => i.sno === s.itemSno)?.product}</td>
+                      <td className="px-3 py-2.5">{s.lab}</td>
+                      <td className="px-3 py-2.5">{s.reportDate}</td>
+                      <td className="px-3 py-2.5"><Badge color={s.result === 'PASS' ? 'green' : 'red'}>{s.result}</Badge></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Card>
+
+            {/* Payment Confirmation */}
+            <Card title="Payment Status — Mandatory for NOC">
+              {sel.payment?.status === 'SUCCESS'
+                ? <InfoBox type="success">Payment confirmed. Txn ID: <strong>{sel.payment.txnId}</strong> | Amount: <strong>{sel.payment.amount}</strong> | Mode: {sel.payment.mode}</InfoBox>
+                : <InfoBox type="danger">Payment not confirmed. NOC cannot be generated until payment is verified.</InfoBox>
+              }
+            </Card>
+
+            {/* AO Final Decision */}
+            <Card title="AO Final Certificate Decision">
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                {[
+                  { id: 'NOC', icon: '📜', label: 'Issue Final NOC', sub: 'Full No Objection Certificate — TO generates NOC', color: 'green' },
+                  { id: 'PNOC', icon: '📋', label: 'Issue Provisional NOC', sub: 'PNOC issued after payment — awaiting full lab clearance', color: 'blue' },
+                  { id: 'NCC', icon: '🚫', label: 'Deny — Generate NCC', sub: 'Non-Conformance Certificate — process stops', color: 'red' },
+                ].map(a => (
+                  <div key={a.id} onClick={() => setCertAction(a.id)}
+                    className={`p-4 border-2 rounded-lg cursor-pointer text-center transition-all ${certAction === a.id ? `border-${a.color}-500 bg-${a.color}-50` : 'border-gray-200 hover:border-gray-400'}`}>
+                    <div className="text-3xl mb-1.5">{a.icon}</div>
+                    <div className={`text-sm font-semibold text-${a.color}-700`}>{a.label}</div>
+                    <div className="text-xs text-gray-400 mt-1 leading-tight">{a.sub}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-xs font-medium text-gray-700 mb-1">AO Remarks</label>
+                <textarea rows={2} value={remarks} onChange={e => setRemarks(e.target.value)}
+                  placeholder="Enter remarks for the decision..." className="w-full text-sm border border-gray-300 rounded px-3 py-2" />
+              </div>
+
+              {certAction === 'NOC' && <InfoBox type="success" className="mb-3">AO approves → TO generates final NOC certificate. For SWIFT applications, NOC is sent to ICEGATE via FSSAI API 3.</InfoBox>}
+              {certAction === 'PNOC' && <InfoBox type="info" className="mb-3">PNOC issued after payment receipt. Final NOC/NCC to follow after complete lab clearance.</InfoBox>}
+              {certAction === 'NCC' && <InfoBox type="danger" className="mb-3">NCC generated. Process ends. For SWIFT, NCC/OSC sent to ICEGATE via FSSAI API 3.</InfoBox>}
+
+              <div className="flex gap-2 justify-end">
+                <Btn color="gray" outline>Revert to Lab for Clarification</Btn>
+                <Btn color="blue" outline onClick={() => certAction && setShowCert(certAction)}>Preview Certificate</Btn>
+                <Btn
+                  color={certAction === 'NOC' ? 'green' : certAction === 'PNOC' ? 'blue' : certAction === 'NCC' ? 'red' : 'gray'}
+                  disabled={!certAction}
+                  onClick={() => setShowCert(certAction)}>
+                  {certAction === 'NOC' ? 'Approve & Issue NOC' : certAction === 'PNOC' ? 'Issue PNOC' : certAction === 'NCC' ? 'Confirm NCC' : 'Select Decision'}
+                </Btn>
+              </div>
+            </Card>
+          </div>
+        )}
+      </div>
+
+      {showCert && (
+        <Modal title={`${showCert} Certificate Preview`} onClose={() => setShowCert(null)} size="xl">
+          <CertificatePreview type={showCert} app={sel} />
+          <div className="flex gap-2 mt-4 justify-end border-t pt-4">
+            <Btn color="gray" outline onClick={() => setShowCert(null)}>Close</Btn>
+            <Btn color="gray" outline>🖨️ Print</Btn>
+            {sel?.source === 'SWIFT' && <Btn color="indigo">📤 Send to ICEGATE (FSSAI API 3)</Btn>}
+            <Btn color="green">✅ Finalize & Issue</Btn>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+// ─── Certificate Preview Component ────────────────────────────────────────────
+function CertificatePreview({ type, app }) {
+  if (!app) return null;
+  const titles = { NOC: 'NO OBJECTION CERTIFICATE', PNOC: 'PROVISIONAL NO OBJECTION CERTIFICATE', NCC: 'NON-CONFORMANCE CERTIFICATE' };
+  const borders = { NOC: 'border-green-500', PNOC: 'border-blue-500', NCC: 'border-red-600' };
+  const certNo = `${type}/FSSAI/JNPT/2024/${app.id.split('/').pop()}`;
+  const note = {
+    NOC: 'This consignment is hereby cleared for customs release. No objection is raised by FSSAI for the import of the food items mentioned herein, subject to continued compliance with FSSAI regulations.',
+    PNOC: 'Provisional clearance is granted for the consignment pending receipt of final laboratory test results. Final NOC or NCC shall be issued upon receipt of complete test reports.',
+    NCC: 'This consignment has been found non-compliant with FSSAI Standards. The consignment is hereby rejected and cannot be imported into India. The importer may apply for re-test within the stipulated period.',
+  };
+  return (
+    <div className={`border-4 ${borders[type]} rounded-lg p-6`}>
+      <div className="text-center mb-5 border-b pb-4">
+        <div className="text-xs font-semibold text-gray-500 tracking-widest mb-1">FOOD SAFETY AND STANDARDS AUTHORITY OF INDIA</div>
+        <div className="text-base font-bold text-gray-900 mb-1">{titles[type]}</div>
+        <div className="text-sm text-gray-600">Certificate No: <strong>{certNo}</strong></div>
+        <div className="text-xs text-gray-400 mt-0.5">Date: 30 April 2024</div>
+      </div>
+      <div className="grid grid-cols-3 gap-3 mb-4 text-sm">
+        <Field label="ARN" value={app.arn} />
+        <Field label="Bill of Entry" value={app.be} />
+        <Field label="BE Date" value={app.beDate} />
+        <Field label="Importer" value={app.importer} />
+        <Field label="IEC Code" value={app.iec} />
+        <Field label="CHA" value={app.cha} />
+        <Field label="Port of Entry" value={app.port} />
+        <Field label="Import Type" value={app.importType} />
+        <Field label="Source" value={app.source} />
+      </div>
+      <table className="w-full text-xs border border-gray-300 border-collapse mb-4">
+        <thead><tr className="bg-gray-100 border border-gray-300">
+          {['S.No', 'HS Code', 'Product Description', 'Quantity', 'Country of Origin', 'Status'].map(h => (
+            <th key={h} className="border border-gray-300 px-2 py-1.5 text-left">{h}</th>
+          ))}
+        </tr></thead>
+        <tbody>
+          {app.items?.map(item => (
+            <tr key={item.sno}>
+              <td className="border border-gray-300 px-2 py-1.5">{item.sno}</td>
+              <td className="border border-gray-300 px-2 py-1.5 font-mono">{item.hsCode}</td>
+              <td className="border border-gray-300 px-2 py-1.5">{item.product}</td>
+              <td className="border border-gray-300 px-2 py-1.5">{item.qty}</td>
+              <td className="border border-gray-300 px-2 py-1.5">{item.country}</td>
+              <td className="border border-gray-300 px-2 py-1.5"><Badge color={type === 'NCC' ? 'red' : 'green'}>{type} ISSUED</Badge></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="text-xs text-gray-600 mb-4 italic">{note[type]}</p>
+      <div className="flex justify-between items-end border-t pt-3 mt-3">
+        <div className="text-xs">
+          <div className="font-semibold text-gray-800">Authorized Signatory</div>
+          <div className="text-gray-600">AO - Suresh Menon</div>
+          <div className="text-gray-500">FSSAI, JNPT Mumbai</div>
+          <div className="text-gray-400 mt-1">This is a computer generated certificate</div>
+        </div>
+        <div className="w-28 h-16 border-2 border-dashed border-gray-300 rounded flex flex-col items-center justify-center text-gray-400 text-xs">
+          <span className="text-base">🔏</span>
+          <span>Digital Seal</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Screen 8: Reports ─────────────────────────────────────────────────────────
+function Reports() {
+  return (
+    <div>
+      <PageHeader title="Reports & Analytics" subtitle="Application processing statistics for JNPT Mumbai" />
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          { title: 'Weekly Scrutiny Report', desc: 'Accept / Reject / Clarification / Not in Scope breakdown', icon: '🔍' },
+          { title: 'Visual Inspection Report', desc: 'VI outcomes, discrepancy types, NCC generated', icon: '👁️' },
+          { title: 'Lab Results Report', desc: 'Pass / Fail rates by product category and lab', icon: '🧪' },
+          { title: 'NOC / PNOC / NCC Issued', desc: 'Certificate issuance summary for the period', icon: '📜' },
+          { title: 'SLA Breach Report', desc: 'Applications pending beyond SLA threshold', icon: '⏱️' },
+          { title: 'SWIFT Integration Log', desc: 'ICEGATE API exchange log — ARN, queries, certificates', icon: '🔗' },
+          { title: 'Payment Reconciliation', desc: 'Online / DD payments received vs pending', icon: '💳' },
+          { title: 'TO Performance Report', desc: 'Applications handled by each Technical Officer', icon: '👨‍💼' },
+          { title: 'INFOLNET Lab Log', desc: 'Sample dispatch and test result turnaround times', icon: '🏥' },
+        ].map(r => (
+          <Card key={r.title}>
+            <div className="text-3xl mb-2">{r.icon}</div>
+            <div className="text-sm font-semibold text-gray-900 mb-1">{r.title}</div>
+            <div className="text-xs text-gray-500 mb-3">{r.desc}</div>
+            <div className="flex gap-2">
+              <Btn size="xs" color="blue" outline>Generate Report</Btn>
+              <Btn size="xs" color="gray" outline>Export CSV</Btn>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Login Screen ──────────────────────────────────────────────────────────────
+function LoginScreen({ onLogin }) {
+  const roleCards = [
+    { role: 'AO',    label: 'Authorized Officer',  icon: '👨‍⚖️', desc: 'Scrutiny, Payment, VI, Lab, NOC issuance',           color: 'border-green-300 hover:bg-green-50' },
+    { role: 'TO',    label: 'Technical Officer',   icon: '🔬',   desc: 'Scrutiny workbench, VI capture, Lab recommendation',  color: 'border-blue-300 hover:bg-blue-50' },
+    { role: 'IMP',   label: 'Importer',            icon: '🏭',   desc: 'Application status, payment, NOC/NCC download',       color: 'border-yellow-300 hover:bg-yellow-50' },
+    { role: 'CHA',   label: 'CHA',                 icon: '📦',   desc: 'Client applications, clearance tracking',             color: 'border-orange-300 hover:bg-orange-50' },
+    { role: 'RD',    label: 'Regional Director',   icon: '👨‍💼',  desc: '1st Review decisions, port performance',              color: 'border-purple-300 hover:bg-purple-50' },
+    { role: 'CEO',   label: 'FSSAI CEO',           icon: '🏛️',   desc: '2nd Appeal (final authority), national dashboard',    color: 'border-red-300 hover:bg-red-50' },
+    { role: 'ADMIN', label: 'Admin',               icon: '⚙️',   desc: 'User management, masters, CMS administration',        color: 'border-gray-300 hover:bg-gray-50' },
+  ];
+  const [selectedRole, setSelectedRole] = useState(null);
+  const [creds, setCreds] = useState({ username: '', password: '' });
+  const [error, setError] = useState('');
+
+  const pickRole = (role) => {
+    setSelectedRole(role);
+    const u = DEMO_USERS.find(d => d.role === role);
+    if (u) setCreds({ username: u.username, password: u.password });
+    setError('');
+  };
+
+  const handleLogin = () => {
+    const user = DEMO_USERS.find(u => u.username === creds.username && u.password === creds.password);
+    if (user) { onLogin(user); }
+    else { setError('Invalid credentials. Select a role tile to auto-fill demo credentials.'); }
+  };
+
+  const demoUser = selectedRole ? DEMO_USERS.find(u => u.role === selectedRole) : null;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-800 to-green-950 flex flex-col items-center justify-center p-6">
+      <div className="text-center mb-7">
+        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
+          <span className="text-green-700 font-black text-2xl">F</span>
+        </div>
+        <div className="text-white/70 text-xs tracking-widest mb-1 uppercase">Food Safety and Standards Authority of India</div>
+        <div className="text-white text-2xl font-bold">Food Import Clearance System</div>
+        <div className="text-white/50 text-sm mt-1">FICS v3.0 — Officer & Stakeholder Portal</div>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6">
+        <p className="text-center text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">Select Your Role</p>
+
+        <div className="grid grid-cols-7 gap-2 mb-5">
+          {roleCards.map(r => (
+            <button key={r.role} onClick={() => pickRole(r.role)}
+              className={`border-2 rounded-xl p-3 text-center transition-all ${selectedRole === r.role ? r.color + ' ring-2 ring-green-500 bg-green-50' : 'border-gray-200 ' + r.color}`}>
+              <div className="text-2xl mb-1">{r.icon}</div>
+              <div className="text-xs font-bold text-gray-800 leading-tight">{r.label}</div>
+              <div className="text-[10px] text-gray-500 mt-1 leading-tight">{r.desc}</div>
+            </button>
+          ))}
+        </div>
+
+        <div className="max-w-sm mx-auto">
+          {demoUser && (
+            <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2.5 mb-4 text-xs text-center">
+              <div className="font-semibold text-green-800">{demoUser.name} &mdash; {demoUser.designation}</div>
+              <div className="text-green-700 mt-0.5">{demoUser.org}</div>
+              <div className="text-gray-500 mt-1">Username: <strong>{demoUser.username}</strong> &nbsp;|&nbsp; Password: <strong>{demoUser.password}</strong></div>
+            </div>
+          )}
+
+          <div className="space-y-3 mb-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Username</label>
+              <input type="text" value={creds.username}
+                onChange={e => setCreds(p => ({ ...p, username: e.target.value }))}
+                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-green-500"
+                placeholder="Enter username" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Password</label>
+              <input type="password" value={creds.password}
+                onChange={e => setCreds(p => ({ ...p, password: e.target.value }))}
+                onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-green-500"
+                placeholder="Enter password" />
+            </div>
+          </div>
+
+          {error && <p className="text-xs text-red-600 text-center mb-2">{error}</p>}
+
+          <button onClick={handleLogin}
+            className="w-full bg-green-700 hover:bg-green-800 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm">
+            Login to FICS Portal &rarr;
+          </button>
+
+          <p className="text-center mt-3 text-xs text-gray-400">
+            Quick login: &nbsp;
+            {DEMO_USERS.map(u => (
+              <button key={u.role} onClick={() => onLogin(u)}
+                className="mx-1 text-green-700 hover:underline font-medium">{u.role}</button>
+            ))}
+          </p>
+        </div>
+      </div>
+      <p className="mt-5 text-white/30 text-xs">FICS Mockup — For demonstration purposes only &nbsp;|&nbsp; &copy; FSSAI 2024</p>
+    </div>
+  );
+}
+
+// ─── Screen 0: FICS Home ───────────────────────────────────────────────────────
+function FICSHome({ go, currentUser }) {
+  const role = currentUser?.role ?? 'AO';
+
+  const MODULE_SETS = {
+    AO: [
+      { id:'bin',      icon:'📋', label:'Application Bin',      desc:'Full processing queue view',                      color:'bg-blue-50 border-blue-200 hover:bg-blue-100',     iconBg:'bg-blue-600' },
+      { id:'scrutiny', icon:'🔍', label:'Scrutiny',              desc:'Accept / reject / clarify applications',           color:'bg-indigo-50 border-indigo-200 hover:bg-indigo-100', iconBg:'bg-indigo-600', pending:12 },
+      { id:'payment',  icon:'💳', label:'Payment Verification',  desc:'Verify DD and online payments',                   color:'bg-yellow-50 border-yellow-200 hover:bg-yellow-100', iconBg:'bg-yellow-500', pending:3 },
+      { id:'vi',       icon:'👁️', label:'Visual Inspection',     desc:'VI appointments, sampling, discrepancy',          color:'bg-orange-50 border-orange-200 hover:bg-orange-100', iconBg:'bg-orange-500', pending:7 },
+      { id:'lab',      icon:'🧪', label:'Lab Results',           desc:'Review INFOLNET lab reports, AO decision',        color:'bg-purple-50 border-purple-200 hover:bg-purple-100', iconBg:'bg-purple-600', pending:5 },
+      { id:'noc',      icon:'📜', label:'NOC Issuance',          desc:'Issue NOC / PNOC / NCC → ICEGATE',                color:'bg-green-50 border-green-200 hover:bg-green-100',   iconBg:'bg-green-600',  pending:4 },
+      { id:'review',   icon:'⚖️', label:'Review & Appeal',       desc:'Retest, 1st Review (RD), 2nd Appeal (CEO)',       color:'bg-red-50 border-red-200 hover:bg-red-100',         iconBg:'bg-red-600',    pending:3 },
+      { id:'reports',  icon:'📊', label:'Reports & Analytics',   desc:'SLA, payment reconciliation, INFOLNET lab log',   color:'bg-teal-50 border-teal-200 hover:bg-teal-100',      iconBg:'bg-teal-600' },
+    ],
+    TO: [
+      { id:'bin',      icon:'📋', label:'Application Bin',       desc:'Applications assigned to you',                    color:'bg-blue-50 border-blue-200 hover:bg-blue-100',     iconBg:'bg-blue-600' },
+      { id:'scrutiny', icon:'🔍', label:'Scrutiny Workbench',    desc:'Clarification drafting, item-level decisions',    color:'bg-indigo-50 border-indigo-200 hover:bg-indigo-100', iconBg:'bg-indigo-600', pending:12 },
+      { id:'vi',       icon:'👁️', label:'Visual Inspection',     desc:'VI schedule, sample capture, batch grouping',     color:'bg-orange-50 border-orange-200 hover:bg-orange-100', iconBg:'bg-orange-500', pending:7 },
+      { id:'lab',      icon:'🧪', label:'Lab Results',           desc:'Review lab reports, recommend to AO',              color:'bg-purple-50 border-purple-200 hover:bg-purple-100', iconBg:'bg-purple-600', pending:5 },
+      { id:'reports',  icon:'📊', label:'Reports',               desc:'Workbench statistics and performance',             color:'bg-teal-50 border-teal-200 hover:bg-teal-100',      iconBg:'bg-teal-600' },
+    ],
+    IMP: [
+      { id:'imp_apps',    icon:'📋', label:'My Applications',    desc:'Track all import applications and status',         color:'bg-blue-50 border-blue-200 hover:bg-blue-100',     iconBg:'bg-blue-600', pending:3 },
+      { id:'imp_payment', icon:'💳', label:'Payments',           desc:'Pay scrutiny / VI / retest fees (online or DD)',   color:'bg-yellow-50 border-yellow-200 hover:bg-yellow-100', iconBg:'bg-yellow-500', pending:1 },
+      { id:'imp_clarif',  icon:'❓', label:'Clarifications',     desc:'Respond to AO scrutiny clarification queries',     color:'bg-orange-50 border-orange-200 hover:bg-orange-100', iconBg:'bg-orange-500', pending:2 },
+      { id:'imp_noc',     icon:'📜', label:'NOC / NCC Downloads',desc:'Download issued certificates',                    color:'bg-green-50 border-green-200 hover:bg-green-100',   iconBg:'bg-green-600' },
+      { id:'imp_review',  icon:'⚖️', label:'Review & Retest',   desc:'Submit Form 6 — Retest / 1st Review / Appeal',    color:'bg-red-50 border-red-200 hover:bg-red-100',         iconBg:'bg-red-600' },
+    ],
+    CHA: [
+      { id:'imp_apps',    icon:'📋', label:'Client Applications',desc:'Track all client consignments and status',         color:'bg-blue-50 border-blue-200 hover:bg-blue-100',     iconBg:'bg-blue-600', pending:5 },
+      { id:'imp_payment', icon:'💳', label:'Payments',           desc:'Submit payments for clients (online / DD)',        color:'bg-yellow-50 border-yellow-200 hover:bg-yellow-100', iconBg:'bg-yellow-500', pending:2 },
+      { id:'imp_clarif',  icon:'❓', label:'Clarifications',     desc:'Respond to scrutiny clarifications for clients',   color:'bg-orange-50 border-orange-200 hover:bg-orange-100', iconBg:'bg-orange-500', pending:3 },
+      { id:'imp_noc',     icon:'📜', label:'NOC / NCC Downloads',desc:'Download issued certificates for clients',         color:'bg-green-50 border-green-200 hover:bg-green-100',   iconBg:'bg-green-600' },
+      { id:'imp_review',  icon:'⚖️', label:'Review & Retest',   desc:'File Review / Retest on behalf of clients',       color:'bg-red-50 border-red-200 hover:bg-red-100',         iconBg:'bg-red-600' },
+    ],
+    RD: [
+      { id:'review',  icon:'⚖️', label:'1st Review Queue',      desc:'NCC cases requiring RD decision — 2 pending',     color:'bg-blue-50 border-blue-200 hover:bg-blue-100',     iconBg:'bg-blue-600', pending:2 },
+      { id:'reports', icon:'📊', label:'Port Performance',      desc:'JNPT port summary — SLA, throughput, trends',      color:'bg-teal-50 border-teal-200 hover:bg-teal-100',     iconBg:'bg-teal-600' },
+    ],
+    CEO: [
+      { id:'review',  icon:'🏛️', label:'2nd Appeal Queue',      desc:'2nd Appeal cases for final CEO decision — 1 pending', color:'bg-red-50 border-red-200 hover:bg-red-100',   iconBg:'bg-red-600', pending:1 },
+      { id:'reports', icon:'📊', label:'National Dashboard',    desc:'All-India import clearance performance overview',  color:'bg-teal-50 border-teal-200 hover:bg-teal-100',     iconBg:'bg-teal-600' },
+    ],
+    ADMIN: [
+      { id:'admin_users',     icon:'👥', label:'User Management',  desc:'Create / activate / deactivate users',           color:'bg-blue-50 border-blue-200 hover:bg-blue-100',     iconBg:'bg-blue-600' },
+      { id:'admin_masters',   icon:'⚙️', label:'Master Management',desc:'Port, lab, HS code, fee structure, SLA',         color:'bg-gray-50 border-gray-200 hover:bg-gray-100',     iconBg:'bg-gray-600' },
+      { id:'admin_circulars', icon:'📰', label:'Circulars & CMS',  desc:'Publish news, circulars, FAQs for stakeholders', color:'bg-purple-50 border-purple-200 hover:bg-purple-100', iconBg:'bg-purple-600' },
+    ],
+  };
+  const modules = MODULE_SETS[role] ?? MODULE_SETS.AO;
+
+  const STAT_SETS = {
+    AO:    [{label:'Total Active',val:38,color:'bg-gray-700',icon:'📁'},{label:'Scrutiny Pending',val:12,color:'bg-blue-600',icon:'🔍'},{label:'VI / Lab In Progress',val:12,color:'bg-orange-500',icon:'🧪'},{label:'NOC Queue',val:4,color:'bg-green-600',icon:'📜'},{label:'Review & Appeal',val:3,color:'bg-red-500',icon:'⚖️'}],
+    TO:    [{label:'Assigned to Me',val:8,color:'bg-blue-600',icon:'📋'},{label:'Scrutiny Pending',val:5,color:'bg-indigo-600',icon:'🔍'},{label:'VI Due Today',val:3,color:'bg-orange-500',icon:'👁️'},{label:'Lab Pending',val:2,color:'bg-purple-600',icon:'🧪'}],
+    IMP:   [{label:'My Applications',val:3,color:'bg-blue-600',icon:'📁'},{label:'In Process',val:2,color:'bg-orange-500',icon:'⏳'},{label:'NOC Received',val:5,color:'bg-green-600',icon:'📜'},{label:'NCC Received',val:1,color:'bg-red-500',icon:'🚫'}],
+    CHA:   [{label:'Client Apps',val:12,color:'bg-blue-600',icon:'📁'},{label:'In Process',val:7,color:'bg-orange-500',icon:'⏳'},{label:'NOC Issued',val:18,color:'bg-green-600',icon:'📜'},{label:'Clarifications Due',val:3,color:'bg-yellow-500',icon:'❓'}],
+    RD:    [{label:'1st Review Pending',val:2,color:'bg-blue-600',icon:'⚖️'},{label:'Port Throughput (Apr)',val:142,color:'bg-green-600',icon:'📦'},{label:'NCC Confirmed (Apr)',val:8,color:'bg-red-500',icon:'🚫'}],
+    CEO:   [{label:'2nd Appeal Pending',val:1,color:'bg-red-500',icon:'🏛️'},{label:'Resolved This Month',val:4,color:'bg-green-600',icon:'✅'},{label:'Total Active Ports',val:12,color:'bg-blue-600',icon:'🏭'}],
+    ADMIN: [{label:'Total Users',val:247,color:'bg-blue-600',icon:'👥'},{label:'Active Today',val:34,color:'bg-green-600',icon:'✅'},{label:'Pending Activations',val:5,color:'bg-yellow-500',icon:'⏳'}],
+  };
+  const stats = STAT_SETS[role] ?? STAT_SETS.AO;
+
+  const ALERT_SETS = {
+    AO:    [{type:'danger',msg:'FICS/2024/3818 — Lab FAIL: Aflatoxin + Sudan Red — AO decision pending'},{type:'warn',msg:'FICS/2024/3821 — Scrutiny SLA breach risk today (2 days pending)'},{type:'warn',msg:'REV/2024/001 — Retest window closes in 3 days for M/s Dragon Foods'},{type:'info',msg:'FICS/2024/3820 — DD submitted at SBI Chennai — verify before EOD'},{type:'success',msg:'NOC issued for FICS/2024/3815 — transmitted to ICEGATE successfully'}],
+    TO:    [{type:'warn',msg:'FICS/2024/3819 — VI discrepancy pending AO approval — your clarification needed'},{type:'info',msg:'FICS/2024/3818 — Lab results received — verify and recommend to AO'},{type:'success',msg:'FICS/2024/3817 — Your NOC recommendation accepted by AO'}],
+    IMP:   [{type:'warn',msg:'FICS/2024/3821 — Clarification query raised by AO — respond by 02 May'},{type:'info',msg:'FICS/2024/3819 — Visual Inspection in progress at JNPT'},{type:'danger',msg:'FICS/2024/3810 — NCC issued — Retest window: 3 days remaining'}],
+    CHA:   [{type:'warn',msg:'3 client applications have pending clarification responses'},{type:'info',msg:'M/s Global Foods — VI scheduled 15 Apr — ensure representative presence'},{type:'success',msg:'M/s Pure Harvest — NOC issued and sent to ICEGATE'}],
+    RD:    [{type:'warn',msg:'REV/2024/002 — 1st Review: 5 days left in 30-day window — assign TO today'},{type:'info',msg:'REV/2024/001 — Retest approved by AO — awaiting lab result'}],
+    CEO:   [{type:'warn',msg:'REV/2024/003 — 2nd Appeal pending CEO decision (M/s Pacific Seafoods — Mercury)'},{type:'info',msg:'4 appeals resolved this month — 2 NOC issued, 2 NCC confirmed'}],
+    ADMIN: [{type:'warn',msg:'5 user activation requests pending approval'},{type:'info',msg:'INFOLNET scheduled maintenance 2 May — notify labs and AOs'},{type:'success',msg:'SWIFT API 3 integration health check passed — all ports connected'}],
+  };
+  const alerts = ALERT_SETS[role] ?? ALERT_SETS.AO;
+
+  const wsScreen = ['IMP','CHA'].includes(role) ? 'imp_apps' : role === 'ADMIN' ? 'admin_users' : role === 'RD' || role === 'CEO' ? 'review' : 'dashboard';
+
+  return (
+    <div>
+      {/* FSSAI Portal Banner */}
+      <div className="bg-gradient-to-r from-green-700 to-green-900 text-white rounded-xl p-5 mb-5 flex items-center gap-5">
+        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center flex-shrink-0">
+          <div className="text-green-700 font-black text-2xl">F</div>
+        </div>
+        <div className="flex-1">
+          <div className="text-xs font-medium text-green-200 tracking-widest mb-0.5">FOOD SAFETY AND STANDARDS AUTHORITY OF INDIA</div>
+          <div className="text-xl font-bold">Food Import Clearance System (FICS)</div>
+          <div className="text-xs text-green-200 mt-0.5">Portal Version 3.0 &nbsp;|&nbsp; {currentUser?.designation}</div>
+        </div>
+        <div className="text-right text-xs text-green-200">
+          <div className="font-semibold text-white text-sm">{currentUser?.role} — {currentUser?.name}</div>
+          <div className="mt-0.5">{currentUser?.org}</div>
+          <div className="mt-0.5">30 Apr 2024 &nbsp;|&nbsp; 10:45 AM</div>
+          <button onClick={() => go(wsScreen)} className="mt-2 bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-1.5 rounded transition-colors">
+            Go to Workspace →
+          </button>
+        </div>
+      </div>
+
+      {/* Stats Row */}
+      <div className="flex gap-3 mb-5">
+        {stats.map(s => (
+          <div key={s.label} className={`flex-1 ${s.color} text-white rounded-lg p-3`}>
+            <div className="flex items-center justify-between">
+              <span className="text-2xl">{s.icon}</span>
+              <span className="text-3xl font-black">{s.val}</span>
+            </div>
+            <div className="text-xs text-white/80 mt-1">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Module Tiles */}
+      <div className="grid grid-cols-4 gap-3 mb-5">
+        {modules.map(m => (
+          <button key={m.id} onClick={() => go(m.id)}
+            className={`border rounded-xl p-4 text-left transition-all relative ${m.color}`}>
+            {m.pending && (
+              <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">{m.pending}</span>
+            )}
+            <div className={`w-10 h-10 ${m.iconBg} rounded-lg flex items-center justify-center text-white text-xl mb-2`}>{m.icon}</div>
+            <div className="text-sm font-semibold text-gray-900 mb-0.5">{m.label}</div>
+            <div className="text-xs text-gray-500 leading-snug">{m.desc}</div>
+          </button>
+        ))}
+      </div>
+
+      {/* Alerts + Announcements */}
+      <div className="grid grid-cols-2 gap-4">
+        <Card title="⚠️ Alerts — Your Pending Actions">
+          <div className="space-y-2">
+            {alerts.map((a, i) => <InfoBox key={i} type={a.type}>{a.msg}</InfoBox>)}
+          </div>
+        </Card>
+        <Card title="📌 Announcements — FSSAI Head Office">
+          <div className="space-y-0">
+            {[
+              { date:'29 Apr', msg:'All SCN responses for HS code 09042xxx to be closed by 30 Apr EOD.' },
+              { date:'28 Apr', msg:'INFOLNET maintenance scheduled 2 May 00:00–06:00. Plan sample dispatch accordingly.' },
+              { date:'27 Apr', msg:'New SOP for Retest requests effective 1 May 2024 — refer circular FSSAI/IMP/2024/15.' },
+              { date:'25 Apr', msg:'Round-robin lab assignment temporarily suspended — manual assignment only.' },
+              { date:'24 Apr', msg:'SWIFT integration upgraded — ARN generation now real-time. Report discrepancies to ICEGATE helpdesk.' },
+            ].map((a, i) => (
+              <div key={i} className="flex gap-3 py-2 border-b border-gray-50 last:border-0">
+                <span className="text-xs font-medium text-gray-400 w-12 flex-shrink-0 pt-0.5">{a.date}</span>
+                <span className="text-xs text-gray-700 leading-snug">{a.msg}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ─── Importer / CHA Workspace ──────────────────────────────────────────────────
+function ImporterPortal({ currentUser, defaultTab = 'apps' }) {
+  const [tab, setTab] = useState(defaultTab);
+  const isCHA = currentUser?.role === 'CHA';
+  const tabs = [
+    { id:'apps',    label: isCHA ? '📋 Client Applications' : '📋 My Applications' },
+    { id:'payment', label: '💳 Payments' },
+    { id:'clarif',  label: '❓ Clarifications' },
+    { id:'noc',     label: '📜 NOC / NCC Downloads' },
+    { id:'review',  label: '⚖️ Review & Retest' },
+  ];
+  const myApps = isCHA ? APPS : [APPS[0]];
+
+  return (
+    <div>
+      <PageHeader
+        title={isCHA ? 'CHA — Client Application Tracker' : 'Importer Application Dashboard'}
+        subtitle={`Welcome, ${currentUser?.name} | ${currentUser?.org}`}
+      />
+      <div className="flex border-b border-gray-200 mb-4">
+        {tabs.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)}
+            className={`px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${tab === t.id ? 'border-green-600 text-green-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'apps' && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-4 gap-3 mb-3">
+            {[
+              { label:'Total Applications', val:myApps.length,  color:'bg-blue-500' },
+              { label:'In Process',         val:myApps.filter(a=>!['completed_noc','completed_ncc','rejected'].includes(a.stage)).length, color:'bg-orange-500' },
+              { label:'NOC Issued',         val:5,              color:'bg-green-500' },
+              { label:'NCC Issued',         val:1,              color:'bg-red-500' },
+            ].map(s => (
+              <div key={s.label} className={`${s.color} text-white rounded-lg p-3`}>
+                <div className="text-2xl font-bold">{s.val}</div>
+                <div className="text-xs text-white/80 mt-0.5">{s.label}</div>
+              </div>
+            ))}
+          </div>
+          <Card title="Application Status">
+            <table className="w-full text-xs">
+              <thead><tr className="bg-gray-50 border-b text-gray-500">
+                {['App ID','ARN','Product(s)','Port','Stage','Status','Action'].map(h => (
+                  <th key={h} className="text-left px-3 py-2">{h}</th>
+                ))}
+              </tr></thead>
+              <tbody>
+                {myApps.map(a => (
+                  <tr key={a.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="px-3 py-2.5 font-mono text-blue-600">{a.id}</td>
+                    <td className="px-3 py-2.5 font-mono text-gray-500 text-[10px]">{a.arn}</td>
+                    <td className="px-3 py-2.5 max-w-[140px] truncate">{a.items.map(i => i.product).join(', ')}</td>
+                    <td className="px-3 py-2.5">{a.port}</td>
+                    <td className="px-3 py-2.5"><StageBadge stage={a.stage} /></td>
+                    <td className="px-3 py-2.5 text-[10px] text-gray-500">{a.status}</td>
+                    <td className="px-3 py-2.5"><Btn size="xs" color="blue" outline>View</Btn></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        </div>
+      )}
+
+      {tab === 'payment' && (
+        <Card title="Payment Status">
+          <InfoBox type="info">Online payment gateway for FSSAI scrutiny fee, VI fee, and retest fee. DD submission also available for offline payment.</InfoBox>
+          <div className="mt-3 space-y-2">
+            {APPS.filter(a => a.payment).slice(0, 3).map(a => (
+              <div key={a.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <div className="text-xs font-semibold">{a.id}</div>
+                  <div className="text-xs text-gray-500">Mode: {a.payment.mode} &nbsp;|&nbsp; Amount: {a.payment.amount} &nbsp;|&nbsp; {a.payment.txnId || a.payment.ddNo}</div>
+                </div>
+                <Badge color={a.payment.status === 'SUCCESS' ? 'green' : 'yellow'}>{a.payment.status}</Badge>
+              </div>
+            ))}
+            <div className="pt-2"><Btn color="green">+ Pay New Fee</Btn></div>
+          </div>
+        </Card>
+      )}
+
+      {tab === 'clarif' && (
+        <Card title="Scrutiny Clarifications Pending">
+          <InfoBox type="warn">AO has raised clarification queries on your applications. Please respond with supporting documents within the stipulated timeframe.</InfoBox>
+          <div className="mt-3 space-y-3">
+            {[
+              { id:'FICS/2024/3821', query:'Please upload FSSAI Product Approval Certificate for Protein Powder (HS: 21069099). Clarification due by 02 May 2024.' },
+            ].map(c => (
+              <div key={c.id} className="p-3 border border-yellow-200 bg-yellow-50 rounded-lg">
+                <div className="text-xs font-semibold text-gray-800 mb-1">{c.id}</div>
+                <div className="text-xs text-gray-600 mb-3">{c.query}</div>
+                <div className="flex items-center gap-3">
+                  <input type="file" className="text-xs flex-1" />
+                  <Btn size="xs" color="blue">Submit Response</Btn>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {tab === 'noc' && (
+        <Card title="NOC / PNOC / NCC Downloads">
+          <table className="w-full text-xs">
+            <thead><tr className="bg-gray-50 border-b text-gray-500">
+              {['Certificate No','App ID','Type','Issue Date','Download'].map(h => (
+                <th key={h} className="text-left px-3 py-2">{h}</th>
+              ))}
+            </tr></thead>
+            <tbody>
+              {[
+                { certNo:'NOC/FSSAI/JNPT/2024/3815', appId:'FICS/2024/3815', type:'NOC',  date:'2024-04-20' },
+                { certNo:'NCC/FSSAI/JNPT/2024/3810', appId:'FICS/2024/3810', type:'NCC',  date:'2024-04-15' },
+                { certNo:'PNOC/FSSAI/JNPT/2024/3808', appId:'FICS/2024/3808', type:'PNOC', date:'2024-04-10' },
+              ].map(c => (
+                <tr key={c.certNo} className="border-b border-gray-100">
+                  <td className="px-3 py-2.5 font-mono text-green-700 text-[10px]">{c.certNo}</td>
+                  <td className="px-3 py-2.5 font-mono text-blue-600">{c.appId}</td>
+                  <td className="px-3 py-2.5"><Badge color={c.type === 'NOC' ? 'green' : c.type === 'PNOC' ? 'blue' : 'red'}>{c.type}</Badge></td>
+                  <td className="px-3 py-2.5">{c.date}</td>
+                  <td className="px-3 py-2.5"><Btn size="xs" color="gray" outline>📄 Download PDF</Btn></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
+
+      {tab === 'review' && (
+        <div className="space-y-4">
+          <InfoBox type="info">After receiving an NCC, you may apply for Retest (within 15 days) or 1st Review with RD (within 30 days) by submitting Form 6 through this portal.</InfoBox>
+          {REVIEW_CASES.map(r => (
+            <Card key={r.id} title={`${r.id} — ${r.type === 'RETEST' ? 'Retest Request' : r.type === 'REVIEW_1' ? '1st Review / RD' : '2nd Appeal / CEO'}`}>
+              <div className="grid grid-cols-3 gap-3 mb-2">
+                <Field label="NCC Number" value={r.nccNo} />
+                <Field label="NCC Date" value={r.nccDate} />
+                <Field label="Status" value={r.status} />
+                <Field label="Product" value={r.product} />
+                {r.daysLeft && <Field label="Days Remaining" value={`${r.daysLeft} days`} />}
+              </div>
+              <InfoBox type="danger">{r.failReason}</InfoBox>
+            </Card>
+          ))}
+          <div className="flex gap-2 pt-2">
+            <Btn color="orange">+ Apply for Retest (Form 6)</Btn>
+            <Btn color="blue" outline>+ Apply for 1st Review (Form 6)</Btn>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Admin Workspace ────────────────────────────────────────────────────────────
+function AdminPortal({ currentUser, defaultTab = 'users' }) {
+  const [tab, setTab] = useState(defaultTab);
+  return (
+    <div>
+      <PageHeader title="FICS Administration Console" subtitle={`System Administrator — ${currentUser?.org}`} />
+      <div className="flex border-b border-gray-200 mb-4">
+        {[
+          { id:'users',     label:'👥 User Management' },
+          { id:'masters',   label:'⚙️ Master Management' },
+          { id:'circulars', label:'📰 Circulars & CMS' },
+        ].map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)}
+            className={`px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${tab === t.id ? 'border-green-600 text-green-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'users' && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div className="flex gap-2">
+              <input className="text-sm border rounded px-3 py-1.5 w-56" placeholder="Search user / IEC / username..." />
+              <select className="text-sm border rounded px-3 py-1.5">
+                <option>All Roles</option>
+                {['AO','TO','IMP','CHA','RD','CEO','ADMIN'].map(r => <option key={r}>{r}</option>)}
+              </select>
+            </div>
+            <Btn color="green">+ Create User</Btn>
+          </div>
+          <Card title="Registered Users">
+            <table className="w-full text-xs">
+              <thead><tr className="bg-gray-50 border-b text-gray-500">
+                {['Name','Role','Org / Port','Username','Status','Actions'].map(h => (
+                  <th key={h} className="text-left px-3 py-2">{h}</th>
+                ))}
+              </tr></thead>
+              <tbody>
+                {DEMO_USERS.map((u, i) => (
+                  <tr key={u.username} className="border-b border-gray-100">
+                    <td className="px-3 py-2.5 font-medium">{u.name}</td>
+                    <td className="px-3 py-2.5">
+                      <Badge color={u.role==='AO'?'green':u.role==='TO'?'blue':u.role==='CEO'?'red':u.role==='RD'?'purple':u.role==='ADMIN'?'gray':'yellow'}>
+                        {u.role}
+                      </Badge>
+                    </td>
+                    <td className="px-3 py-2.5 text-gray-600">{u.org}</td>
+                    <td className="px-3 py-2.5 font-mono">{u.username}</td>
+                    <td className="px-3 py-2.5"><Badge color="green">Active</Badge></td>
+                    <td className="px-3 py-2.5 flex gap-1">
+                      <Btn size="xs" color="blue" outline>Edit</Btn>
+                      <Btn size="xs" color="red" outline>Deactivate</Btn>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        </div>
+      )}
+
+      {tab === 'masters' && (
+        <div className="grid grid-cols-3 gap-4">
+          {[
+            { title:'Port Master',     desc:'Add/edit ports of entry and CFS locations', icon:'🏭' },
+            { title:'Lab Master',      desc:'FSSAI referral labs — INFOLNET integration', icon:'🧪' },
+            { title:'HS Code Master',  desc:'Harmonised System code descriptions',        icon:'📋' },
+            { title:'Fee Structure',   desc:'Scrutiny, VI, retest fee per product category', icon:'💰' },
+            { title:'SLA Configuration', desc:'Stage-wise SLA hours for each role',      icon:'⏱️' },
+            { title:'Document Types',  desc:'Mandatory/optional documents per product',  icon:'📄' },
+          ].map(m => (
+            <Card key={m.title}>
+              <div className="text-3xl mb-2">{m.icon}</div>
+              <div className="text-sm font-semibold mb-1">{m.title}</div>
+              <div className="text-xs text-gray-500 mb-3">{m.desc}</div>
+              <div className="flex gap-2">
+                <Btn size="xs" color="blue" outline>Manage</Btn>
+                <Btn size="xs" color="gray" outline>Export</Btn>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {tab === 'circulars' && (
+        <Card title="Circulars, Notices & Announcements">
+          <div className="flex justify-end mb-3"><Btn color="green" size="sm">+ New Circular</Btn></div>
+          <table className="w-full text-xs">
+            <thead><tr className="bg-gray-50 border-b text-gray-500">
+              {['Ref No','Subject','Date','Type','Visible To','Actions'].map(h => (
+                <th key={h} className="text-left px-3 py-2">{h}</th>
+              ))}
+            </tr></thead>
+            <tbody>
+              {[
+                { ref:'FSSAI/IMP/2024/15', sub:'New SOP for Retest requests effective 1 May 2024',         date:'27 Apr', type:'Circular', to:'All Officers' },
+                { ref:'FSSAI/IMP/2024/14', sub:'INFOLNET maintenance scheduled 2 May 00:00–06:00',         date:'28 Apr', type:'Notice',   to:'All Users' },
+                { ref:'FSSAI/IMP/2024/13', sub:'Round-robin lab assignment temporarily suspended',           date:'25 Apr', type:'Notice',   to:'AO, TO' },
+              ].map(c => (
+                <tr key={c.ref} className="border-b border-gray-100">
+                  <td className="px-3 py-2.5 font-mono text-green-700 text-[10px]">{c.ref}</td>
+                  <td className="px-3 py-2.5">{c.sub}</td>
+                  <td className="px-3 py-2.5">{c.date}</td>
+                  <td className="px-3 py-2.5"><Badge color="blue">{c.type}</Badge></td>
+                  <td className="px-3 py-2.5 text-gray-500">{c.to}</td>
+                  <td className="px-3 py-2.5 flex gap-1">
+                    <Btn size="xs" color="blue" outline>Edit</Btn>
+                    <Btn size="xs" color="red" outline>Delete</Btn>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ─── Screen 9: Review & Appeal ─────────────────────────────────────────────────
+function ReviewAppeal({ go, currentUser }) {
+  const role = currentUser?.role;
+  const defaultTab = role === 'CEO' ? 'appeal2' : role === 'RD' ? 'review1' : 'retest';
+  const [tab, setTab] = useState(defaultTab);
+  const tabs = [
+    { id: 'retest',  label: '🔄 Retest',              sub: '15-day window',  count: REVIEW_CASES.filter(r => r.type === 'RETEST').length },
+    { id: 'review1', label: '⚖️ 1st Review / RD',      sub: '30-day window',  count: REVIEW_CASES.filter(r => r.type === 'REVIEW_1').length },
+    { id: 'appeal2', label: '🏛️ 2nd Appeal / CEO',     sub: 'Final authority', count: REVIEW_CASES.filter(r => r.type === 'APPEAL_2').length },
+  ];
+
+  return (
+    <div>
+      <PageHeader title="Review & Appeal" subtitle="Post-NCC importer-initiated requests — Retest | 1st Review (RD) | 2nd Appeal (CEO)" />
+      <InfoBox type="info">
+        <strong>Process:</strong> NCC Issued → Importer submits Form 6 within 15 days for Retest → AO approves → Lab retests (secondary sample) → If fail: Importer may request 1st Review to RD within 30 days → RD decides → If NCC confirmed: 2nd Appeal to CEO (final, binding decision)
+      </InfoBox>
+
+      <div className="flex border-b border-gray-200 mt-4 mb-4">
+        {tabs.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)}
+            className={`px-5 py-2.5 text-xs font-medium border-b-2 transition-colors flex items-center gap-2 ${tab === t.id ? 'border-green-600 text-green-700 bg-green-50' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+            {t.label}
+            <span className="text-gray-400 text-[10px]">({t.sub})</span>
+            <span className={`rounded-full text-[10px] font-bold px-1.5 py-0.5 ${tab === t.id ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'}`}>{t.count}</span>
+          </button>
+        ))}
+      </div>
+
+      {tab === 'retest'  && <RetestPanel />}
+      {tab === 'review1' && <Review1Panel />}
+      {tab === 'appeal2' && <Appeal2Panel />}
+    </div>
+  );
+}
+
+function RetestPanel() {
+  const cases = REVIEW_CASES.filter(r => r.type === 'RETEST');
+  const [sel, setSel] = useState(cases[0]);
+  const [modal, setModal] = useState(null);
+
+  return (
+    <div className="grid grid-cols-4 gap-4">
+      <div className="col-span-1 space-y-2">
+        <div className="text-xs font-semibold text-gray-500 uppercase mb-2">Retest Requests ({cases.length})</div>
+        {cases.map(c => (
+          <div key={c.id} onClick={() => setSel(c)}
+            className={`p-3 rounded-lg border cursor-pointer bg-white ${sel?.id === c.id ? 'border-orange-500 bg-orange-50' : 'border-gray-200 hover:border-orange-300'}`}>
+            <div className="text-xs font-mono font-semibold text-blue-700">{c.id}</div>
+            <div className="text-xs text-gray-600 truncate">{c.importer.replace('M/s ', '')}</div>
+            <div className="mt-1"><Badge color={c.daysLeft <= 3 ? 'red' : 'orange'}>{c.daysLeft} days left</Badge></div>
+          </div>
+        ))}
+      </div>
+
+      {sel && (
+        <div className="col-span-3 space-y-4">
+          <Card title={`Retest Request — ${sel.id}`}>
+            <div className="grid grid-cols-3 gap-3">
+              <Field label="Original App ID" value={sel.appId} />
+              <Field label="NCC Number" value={sel.nccNo} />
+              <Field label="NCC Date" value={sel.nccDate} />
+              <Field label="Importer" value={sel.importer} />
+              <Field label="Product" value={sel.product} />
+              <Field label="HS Code" value={sel.hsCode} />
+            </div>
+          </Card>
+
+          <Card title="Lab Failure — Basis for NCC">
+            <InfoBox type="danger">{sel.failReason}</InfoBox>
+          </Card>
+
+          <Card title="Retest Timeline (15-Day Window)">
+            <div className="flex items-center gap-4 mb-3">
+              {[
+                { label: 'Days Since NCC', val: sel.daysFromNCC, color: 'text-red-600', bg: 'bg-red-50 border-red-200' },
+                { label: 'Days Remaining', val: sel.daysLeft,    color: sel.daysLeft <= 3 ? 'text-red-600' : 'text-orange-600', bg: sel.daysLeft <= 3 ? 'bg-red-50 border-red-200' : 'bg-orange-50 border-orange-200' },
+                { label: 'Total Window',   val: 15,              color: 'text-gray-600',  bg: 'bg-gray-50 border-gray-200' },
+              ].map((s, i, arr) => (
+                <div key={s.label} className="flex items-center gap-4">
+                  <div className={`text-center px-4 py-3 border rounded-lg ${s.bg}`}>
+                    <div className={`text-2xl font-black ${s.color}`}>{s.val}</div>
+                    <div className="text-xs text-gray-500">{s.label}</div>
+                  </div>
+                  {i < arr.length - 1 && <span className="text-gray-300 text-xl">→</span>}
+                </div>
+              ))}
+            </div>
+            {sel.daysLeft <= 3 && <InfoBox type="warn">Retest window closing soon. Importer must be notified immediately. Urgent AO action required.</InfoBox>}
+          </Card>
+
+          <Card title="AO Action — Approve or Deny Retest">
+            <InfoBox type="info">Importer submitted Form 6 for retest within 15-day window. On AO approval: importer pays per-sample retest fee (online only). Secondary (counter) sample dispatched to auto-assigned lab via round robin. Lab acknowledges and commences retest.</InfoBox>
+            <div className="mt-3 space-y-3">
+              <div className="p-3 bg-gray-50 border border-gray-200 rounded flex items-center justify-between">
+                <span className="text-xs font-medium text-gray-700">Counter-Sample Status</span>
+                <Badge color={sel.retestSampleSent ? 'green' : 'yellow'}>{sel.retestSampleSent ? 'Sample dispatched to lab' : 'Awaiting AO approval'}</Badge>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">AO Remarks (optional)</label>
+                <textarea rows={2} placeholder="Remarks for retest decision..." className="w-full text-sm border border-gray-300 rounded px-3 py-2" />
+              </div>
+              <div className="flex gap-2">
+                <Btn color="green" onClick={() => setModal('APPROVE')}>✅ Approve Retest — Notify Importer for Payment</Btn>
+                <Btn color="red" outline onClick={() => setModal('DENY')}>❌ Deny Retest Request</Btn>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {modal === 'APPROVE' && (
+        <Modal title="Approve Retest Request" onClose={() => setModal(null)}>
+          <InfoBox type="info">On approval, importer is notified via FICS portal to pay the per-sample retest fee. Post-payment, counter-sample is auto-assigned to a lab (round robin). Lab acknowledges and commences retest. Result: Pass → NOC; Fail → 1st Review process.</InfoBox>
+          <div className="mt-3 space-y-3">
+            <div>
+              <label className="block text-xs font-medium mb-1">Auto-assigned Lab (Round Robin)</label>
+              <input className="w-full text-sm border rounded px-3 py-2 bg-gray-50" defaultValue="FSSAI Referral Lab — Chennai" readOnly />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">AO Remarks</label>
+              <textarea rows={2} className="w-full text-sm border rounded px-3 py-2" placeholder="Remarks..." />
+            </div>
+          </div>
+          <div className="flex gap-2 mt-4 justify-end">
+            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
+            <Btn color="green">Approve & Notify Importer</Btn>
+          </div>
+        </Modal>
+      )}
+
+      {modal === 'DENY' && (
+        <Modal title="Deny Retest Request" onClose={() => setModal(null)}>
+          <InfoBox type="warn">Retest denied. Importer may still proceed to 1st Review with RD if within 30-day window from NCC date.</InfoBox>
+          <div className="mt-3">
+            <label className="block text-xs font-medium mb-1">Reason for Denial *</label>
+            <textarea rows={3} className="w-full text-sm border rounded px-3 py-2" placeholder="Enter reason for denial..." />
+          </div>
+          <div className="flex gap-2 mt-4 justify-end">
+            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
+            <Btn color="red">Confirm Denial</Btn>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+function Review1Panel() {
+  const cases = REVIEW_CASES.filter(r => r.type === 'REVIEW_1');
+  const [sel, setSel] = useState(cases[0]);
+  const [modal, setModal] = useState(null);
+  const rdOfficers = ['RD - Ramesh Pillai (JNPT)', 'RD - Anita Gupta (Chennai)', 'RD - Manish Joshi (Delhi)'];
+
+  return (
+    <div className="grid grid-cols-4 gap-4">
+      <div className="col-span-1 space-y-2">
+        <div className="text-xs font-semibold text-gray-500 uppercase mb-2">1st Review / RD ({cases.length})</div>
+        {cases.map(c => (
+          <div key={c.id} onClick={() => setSel(c)}
+            className={`p-3 rounded-lg border cursor-pointer bg-white ${sel?.id === c.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}>
+            <div className="text-xs font-mono font-semibold text-blue-700">{c.id}</div>
+            <div className="text-xs text-gray-600 truncate">{c.importer.replace('M/s ', '')}</div>
+            <div className="mt-1"><Badge color={c.daysLeft <= 5 ? 'red' : 'blue'}>{c.daysLeft} days left</Badge></div>
+          </div>
+        ))}
+      </div>
+
+      {sel && (
+        <div className="col-span-3 space-y-4">
+          <Card title={`1st Review Request — ${sel.id}`}>
+            <div className="grid grid-cols-3 gap-3">
+              <Field label="Original App ID" value={sel.appId} />
+              <Field label="NCC Number" value={sel.nccNo} />
+              <Field label="NCC Date" value={sel.nccDate} />
+              <Field label="Importer" value={sel.importer} />
+              <Field label="Product" value={sel.product} />
+              <Field label="HS Code" value={sel.hsCode} />
+              <Field label="Days Since NCC" value={`${sel.daysFromNCC} of 30 days`} />
+              <Field label="Window Remaining" value={`${sel.daysLeft} days`} />
+              <Field label="Status" value={sel.status} />
+            </div>
+          </Card>
+
+          <Card title="NCC Failure Basis">
+            <InfoBox type="danger">{sel.failReason}</InfoBox>
+            <p className="text-xs text-gray-500 mt-2">Importer has submitted Form 6 for 1st Review. FICS confirms this is the importer's 1st review request for this NCC number.</p>
+          </Card>
+
+          <Card title="RD Assignment & TO Delegation">
+            <InfoBox type="info">RD may conduct the review himself or delegate to a TO mapped to the port. Assigned TO seeks clarifications from importer, collects responses, and presents findings to RD. RD takes the final decision.</InfoBox>
+            <div className="mt-3 space-y-3">
+              {sel.assignedRD ? (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded flex items-center gap-3">
+                  <span className="text-2xl">👨‍⚖️</span>
+                  <div>
+                    <div className="text-sm font-semibold text-blue-900">{sel.assignedRD}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">Assigned as Review Decision Authority (RD)</div>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-medium mb-1">Assign RD (Review Decision Authority) *</label>
+                  <select className="w-full text-sm border border-gray-300 rounded px-3 py-2">
+                    <option>-- Select RD --</option>
+                    {rdOfficers.map(o => <option key={o}>{o}</option>)}
+                  </select>
+                </div>
+              )}
+              <div>
+                <label className="block text-xs font-medium mb-1">Assign TO (optional — if RD delegates port-level review)</label>
+                <select className="w-full text-sm border border-gray-300 rounded px-3 py-2">
+                  <option>-- Assign TO (if RD delegates) --</option>
+                  {OFFICERS.map(o => <option key={o}>{o}</option>)}
+                </select>
+              </div>
+              <Btn color="blue">Save Assignment</Btn>
+            </div>
+          </Card>
+
+          <Card title="RD Decision Actions">
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { icon: '✅', label: 'Issue NOC',           sub: 'RD reverses NCC — AO to generate NOC',             color: 'green',  modal: 'RD_NOC' },
+                { icon: '🔄', label: 'Allow Retest / Re-inspection', sub: 'RD orders fresh sampling or re-inspection', color: 'orange', modal: 'RD_RETEST' },
+                { icon: '🏷️', label: 'Label Rectification', sub: 'RD permits labelling correction and re-clearance', color: 'yellow', modal: 'RD_LABEL' },
+                { icon: '❓', label: 'Seek Clarification',   sub: 'TO seeks additional info/docs from importer',      color: 'blue',   modal: 'RD_CLARIF' },
+                { icon: '🚫', label: 'Confirm NCC',          sub: 'RD upholds NCC — importer may appeal to CEO',      color: 'red',    modal: 'RD_NCC' },
+              ].map(a => (
+                <div key={a.label} onClick={() => setModal(a.modal)}
+                  className="p-3 border-2 border-gray-200 rounded-lg cursor-pointer text-center hover:border-gray-400 transition-all">
+                  <div className="text-2xl mb-1">{a.icon}</div>
+                  <div className={`text-xs font-semibold text-${a.color}-700`}>{a.label}</div>
+                  <div className="text-xs text-gray-400 mt-1 leading-tight">{a.sub}</div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {modal === 'RD_NOC' && (
+        <Modal title="RD Decision: Issue NOC" onClose={() => setModal(null)}>
+          <InfoBox type="success">RD reverses the NCC decision. AO will generate the final NOC certificate for this consignment.</InfoBox>
+          <div className="mt-3">
+            <label className="block text-xs font-medium mb-1">RD Order Reference</label>
+            <input className="w-full text-sm border rounded px-3 py-2 mb-3" placeholder="RD Order No..." />
+            <label className="block text-xs font-medium mb-1">RD Remarks *</label>
+            <textarea rows={3} className="w-full text-sm border rounded px-3 py-2" placeholder="Reason for reversing NCC..." />
+          </div>
+          <div className="flex gap-2 mt-4 justify-end">
+            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
+            <Btn color="green">Confirm — Proceed to NOC Issuance</Btn>
+          </div>
+        </Modal>
+      )}
+
+      {modal === 'RD_NCC' && (
+        <Modal title="RD Decision: Confirm NCC" onClose={() => setModal(null)}>
+          <InfoBox type="danger">NCC confirmed by RD. Importer is notified and becomes eligible to file 2nd Appeal with FSSAI CEO.</InfoBox>
+          <div className="mt-3">
+            <label className="block text-xs font-medium mb-1">RD Order Reference</label>
+            <input className="w-full text-sm border rounded px-3 py-2 mb-3" placeholder="RD Order No..." />
+            <label className="block text-xs font-medium mb-1">RD Remarks *</label>
+            <textarea rows={3} className="w-full text-sm border rounded px-3 py-2" placeholder="Reason for confirming NCC..." />
+          </div>
+          <div className="flex gap-2 mt-4 justify-end">
+            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
+            <Btn color="red">Confirm NCC — Notify Importer for 2nd Appeal</Btn>
+          </div>
+        </Modal>
+      )}
+
+      {modal === 'RD_CLARIF' && (
+        <Modal title="Seek Clarification from Importer" onClose={() => setModal(null)}>
+          <p className="text-sm text-gray-600 mb-3">Assigned TO will contact the importer to collect additional documents or clarification on behalf of RD.</p>
+          <textarea rows={3} className="w-full text-sm border rounded px-3 py-2 mb-3" placeholder="Describe documents / clarification required from importer..." />
+          <div className="flex gap-2 justify-end">
+            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
+            <Btn color="blue">Send Clarification Request to Importer</Btn>
+          </div>
+        </Modal>
+      )}
+
+      {(modal === 'RD_RETEST' || modal === 'RD_LABEL') && (
+        <Modal title={modal === 'RD_RETEST' ? 'RD Orders Retest / Re-inspection' : 'RD Orders Label Rectification'} onClose={() => setModal(null)}>
+          <InfoBox type="warn">{modal === 'RD_RETEST' ? 'RD directs a fresh round of sampling and laboratory testing. AO to assign TO for resampling and VI.' : 'RD allows importer to rectify label non-compliance and resubmit for clearance. AO to coordinate.'}</InfoBox>
+          <div className="mt-3">
+            <label className="block text-xs font-medium mb-1">RD Instructions</label>
+            <textarea rows={3} className="w-full text-sm border rounded px-3 py-2" placeholder="Specific instructions from RD..." />
+          </div>
+          <div className="flex gap-2 mt-4 justify-end">
+            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
+            <Btn color="orange">Confirm & Notify AO</Btn>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+function Appeal2Panel() {
+  const cases = REVIEW_CASES.filter(r => r.type === 'APPEAL_2');
+  const [sel, setSel] = useState(cases[0]);
+  const [modal, setModal] = useState(null);
+  const hoTOs = ['HO TO - Vikram Singh (HO Delhi)', 'HO TO - Meera Iyer (HO Delhi)', 'HO TO - Ajay Bose (HO Delhi)'];
+
+  return (
+    <div className="grid grid-cols-4 gap-4">
+      <div className="col-span-1 space-y-2">
+        <div className="text-xs font-semibold text-gray-500 uppercase mb-2">2nd Appeal / CEO ({cases.length})</div>
+        {cases.map(c => (
+          <div key={c.id} onClick={() => setSel(c)}
+            className={`p-3 rounded-lg border cursor-pointer bg-white ${sel?.id === c.id ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-red-300'}`}>
+            <div className="text-xs font-mono font-semibold text-blue-700">{c.id}</div>
+            <div className="text-xs text-gray-600 truncate">{c.importer.replace('M/s ', '')}</div>
+            <div className="mt-1"><Badge color="red">CEO Pending</Badge></div>
+          </div>
+        ))}
+      </div>
+
+      {sel && (
+        <div className="col-span-3 space-y-4">
+          <div className="p-3 bg-red-50 border border-red-300 rounded-lg flex items-center gap-3">
+            <span className="text-2xl">🏛️</span>
+            <div>
+              <div className="text-xs font-bold text-red-800">Final Authority — FSSAI CEO</div>
+              <div className="text-xs text-red-700 mt-0.5">CEO decision is binding and final. No further appeal exists within the FICS system after 2nd Appeal.</div>
+            </div>
+          </div>
+
+          <Card title={`2nd Appeal — ${sel.id}`}>
+            <div className="grid grid-cols-3 gap-3">
+              <Field label="Original App ID" value={sel.appId} />
+              <Field label="NCC Number" value={sel.nccNo} />
+              <Field label="NCC Date" value={sel.nccDate} />
+              <Field label="Importer" value={sel.importer} />
+              <Field label="Product" value={sel.product} />
+              <Field label="HS Code" value={sel.hsCode} />
+              <Field label="1st Review Decision" value={sel.reviewDecision} />
+              <Field label="Appeal Status" value={sel.status} />
+            </div>
+          </Card>
+
+          <Card title="Failure Basis (From Lab Testing)">
+            <InfoBox type="danger">{sel.failReason}</InfoBox>
+          </Card>
+
+          <Card title="HO TO Assignment (CEO Delegates)">
+            <InfoBox type="info">CEO assigns Head Office Technical Officers (HO TOs) to assist in review. HO TOs examine the case, seek clarifications from the importer, and present their findings and recommendation to CEO for final decision.</InfoBox>
+            <div className="mt-3">
+              {sel.assignedCEOTO ? (
+                <div className="p-3 bg-red-50 border border-red-200 rounded flex items-center gap-3">
+                  <span className="text-2xl">👨‍💼</span>
+                  <div>
+                    <div className="text-sm font-semibold text-red-900">{sel.assignedCEOTO}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">Assigned HO TO for CEO Review</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium mb-1">Assign HO TO</label>
+                    <select className="w-full text-sm border border-gray-300 rounded px-3 py-2">
+                      <option>-- Select HO TO --</option>
+                      {hoTOs.map(o => <option key={o}>{o}</option>)}
+                    </select>
+                  </div>
+                  <div className="flex items-end"><Btn color="red">Assign</Btn></div>
+                </div>
+              )}
+            </div>
+          </Card>
+
+          <Card title="CEO Final Decision">
+            <div className="grid grid-cols-3 gap-3 mb-3">
+              {[
+                { icon: '✅', label: 'Issue NOC',             sub: 'CEO reverses NCC — AO generates final NOC',        color: 'green', modal: 'CEO_NOC' },
+                { icon: '❓', label: 'Clarification / Re-eval', sub: 'CEO returns for re-evaluation or additional info', color: 'blue',  modal: 'CEO_CLARIF' },
+                { icon: '🚫', label: 'Confirm NCC (Final)',    sub: 'CEO upholds NCC — process ends; ICEGATE notified', color: 'red',   modal: 'CEO_NCC' },
+              ].map(a => (
+                <div key={a.label} onClick={() => setModal(a.modal)}
+                  className="p-4 border-2 border-gray-200 rounded-lg cursor-pointer text-center hover:border-gray-400 transition-all">
+                  <div className="text-3xl mb-1.5">{a.icon}</div>
+                  <div className={`text-sm font-semibold text-${a.color}-700`}>{a.label}</div>
+                  <div className="text-xs text-gray-400 mt-1 leading-tight">{a.sub}</div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {modal === 'CEO_NOC' && (
+        <Modal title="CEO Decision: Issue NOC — Final" onClose={() => setModal(null)}>
+          <InfoBox type="success">CEO reverses NCC. AO will generate the final NOC certificate. This is a FINAL decision — process ends with NOC issuance and transmission to ICEGATE.</InfoBox>
+          <div className="mt-3 space-y-3">
+            <div>
+              <label className="block text-xs font-medium mb-1">CEO Order Reference *</label>
+              <input className="w-full text-sm border rounded px-3 py-2" placeholder="CEO Order No / File Reference..." />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">CEO Remarks *</label>
+              <textarea rows={3} className="w-full text-sm border rounded px-3 py-2" placeholder="CEO decision remarks..." />
+            </div>
+          </div>
+          <div className="flex gap-2 mt-4 justify-end">
+            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
+            <Btn color="green">Confirm CEO Decision — Issue NOC</Btn>
+          </div>
+        </Modal>
+      )}
+
+      {modal === 'CEO_NCC' && (
+        <Modal title="CEO Decision: Confirm NCC — Final" onClose={() => setModal(null)}>
+          <InfoBox type="danger">CEO confirms NCC. This is the FINAL decision. Process ends. NCC/OSC transmitted to ICEGATE via FSSAI API 3. No further appeal possible within FICS.</InfoBox>
+          <div className="mt-3 space-y-3">
+            <div>
+              <label className="block text-xs font-medium mb-1">CEO Order Reference *</label>
+              <input className="w-full text-sm border rounded px-3 py-2" placeholder="CEO Order No / File Reference..." />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">CEO Final Remarks *</label>
+              <textarea rows={3} className="w-full text-sm border rounded px-3 py-2" placeholder="CEO final remarks..." />
+            </div>
+          </div>
+          <div className="flex gap-2 mt-4 justify-end">
+            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
+            <Btn color="red">Confirm Final NCC — Send to ICEGATE</Btn>
+          </div>
+        </Modal>
+      )}
+
+      {modal === 'CEO_CLARIF' && (
+        <Modal title="CEO: Clarification Required / Re-evaluation" onClose={() => setModal(null)}>
+          <InfoBox type="info">Case returned for re-evaluation. HO TO coordinates with importer, collects required documents or data, and presents updated findings to CEO for final decision.</InfoBox>
+          <div className="mt-3">
+            <textarea rows={3} className="w-full text-sm border rounded px-3 py-2" placeholder="Describe what is required for re-evaluation..." />
+          </div>
+          <div className="flex gap-2 mt-4 justify-end">
+            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
+            <Btn color="blue">Send for Re-evaluation</Btn>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+// ─── Root App ──────────────────────────────────────────────────────────────────
+export default function App() {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [screen, setScreen] = useState('home');
+  const [selectedId, setSelectedId] = useState(null);
+
+  const go = (s, id = null) => { setSelectedId(id); setScreen(s); };
+
+  const handleLogin = (user) => { setCurrentUser(user); setScreen('home'); };
+  const handleLogout = () => { setCurrentUser(null); setScreen('home'); };
+
+  if (!currentUser) return <LoginScreen onLogin={handleLogin} />;
+
+  const u = currentUser;
+  const SCREENS = {
+    home:            <FICSHome go={go} currentUser={u} />,
+    dashboard:       <Dashboard go={go} />,
+    bin:             <ApplicationBin go={go} selectedId={selectedId} />,
+    scrutiny:        <ScrutinyScreen go={go} selectedId={selectedId} />,
+    payment:         <PaymentVerification go={go} selectedId={selectedId} />,
+    vi:              <VisualInspection go={go} selectedId={selectedId} />,
+    lab:             <LabResults go={go} selectedId={selectedId} />,
+    noc:             <NOCIssuance go={go} selectedId={selectedId} />,
+    review:          <ReviewAppeal go={go} currentUser={u} />,
+    reports:         <Reports />,
+    imp_apps:        <ImporterPortal currentUser={u} defaultTab="apps" />,
+    imp_payment:     <ImporterPortal currentUser={u} defaultTab="payment" />,
+    imp_clarif:      <ImporterPortal currentUser={u} defaultTab="clarif" />,
+    imp_noc:         <ImporterPortal currentUser={u} defaultTab="noc" />,
+    imp_review:      <ImporterPortal currentUser={u} defaultTab="review" />,
+    admin_users:     <AdminPortal currentUser={u} defaultTab="users" />,
+    admin_masters:   <AdminPortal currentUser={u} defaultTab="masters" />,
+    admin_circulars: <AdminPortal currentUser={u} defaultTab="circulars" />,
+  };
+
+  return (
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
+      <Sidebar active={screen} go={s => go(s)} currentUser={u} onLogout={handleLogout} />
+      <main className="flex-1 overflow-y-auto p-5">
+        {SCREENS[screen] ?? SCREENS.home}
+      </main>
+    </div>
+  );
+}
