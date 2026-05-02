@@ -301,7 +301,7 @@ function Sidebar({ active, go, currentUser, onLogout }) {
           <div className="w-8 h-8 bg-green-500 rounded flex items-center justify-center text-xs font-bold">F</div>
           <div>
             <div className="text-xs font-bold">FICS Portal</div>
-            <div className="text-xs text-gray-400">FSSAI v3.0</div>
+            <div className="text-xs text-gray-400">FSSAI</div>
           </div>
         </div>
       </div>
@@ -322,7 +322,7 @@ function Sidebar({ active, go, currentUser, onLogout }) {
       <button onClick={onLogout} className="mx-3 mb-2 mt-1 flex items-center gap-2 px-3 py-2 rounded text-xs font-medium text-gray-400 hover:bg-gray-700 hover:text-white transition-colors">
         <span>🚪</span><span>Logout</span>
       </button>
-      <div className="px-3 py-2 border-t border-gray-700 text-xs text-gray-500">FICS v3.0 • FSSAI</div>
+      <div className="px-3 py-2 border-t border-gray-700 text-xs text-gray-500">FICS • FSSAI</div>
     </aside>
   );
 }
@@ -2095,7 +2095,7 @@ function HeroPage({ onLoginClick }) {
                 </div>
                 {/* Showcase content */}
                 <div className="bg-gradient-to-br from-[#006633] to-[#004422] px-6 py-6 text-white">
-                  <div className="text-lg font-black tracking-wide mb-1">FICS 2.0</div>
+                  <div className="text-lg font-black tracking-wide mb-1">FICS</div>
                   <div className="text-sm font-semibold mb-3 text-green-200">Food Import Clearance System</div>
                   <div className="space-y-2">
                     {[
@@ -2128,7 +2128,7 @@ function HeroPage({ onLoginClick }) {
                 <p className="text-sm text-gray-600 leading-relaxed">
                   FICS is FSSAI's digital platform for end-to-end processing of food import consignments —
                   from SWIFT Bill of Entry intake to NOC/NCC issuance. Replacing the legacy WCF system,
-                  FICS 2.0 ensures transparent, paperless, and rule-based clearance at all Indian ports.
+                  FICS ensures transparent, paperless, and rule-based clearance at all Indian ports.
                 </p>
               </div>
 
@@ -2300,14 +2300,14 @@ function HeroPage({ onLoginClick }) {
 // ─── Login Screen ──────────────────────────────────────────────────────────────
 function LoginScreen({ onLogin, onBack }) {
   const roleCards = [
-    { role: 'AO',    label: 'Authorized Officer',  icon: '👨‍⚖️', desc: 'Scrutiny, Payment, VI, Lab, NOC issuance',            color: 'border-green-300 hover:bg-green-50' },
-    { role: 'INS',   label: 'Inspector / TO',      icon: '🔬',   desc: 'Inspection assignments, sampling, lab forwarding',     color: 'border-blue-300 hover:bg-blue-50' },
-    { role: 'IMP',   label: 'Importer',            icon: '🏭',   desc: 'Application status, payment, NOC/NCC download',        color: 'border-yellow-300 hover:bg-yellow-50' },
-    { role: 'CHA',   label: 'CHA',                 icon: '📦',   desc: 'Client applications, clearance tracking',              color: 'border-orange-300 hover:bg-orange-50' },
-    { role: 'LABS',  label: 'Lab',                 icon: '🧪',   desc: 'Sample receipt, analysis, report & invoice generation', color: 'border-teal-300 hover:bg-teal-50' },
-    { role: 'RD',    label: 'Regional Director',   icon: '👨‍💼',  desc: '1st Review decisions, port performance',               color: 'border-purple-300 hover:bg-purple-50' },
-    { role: 'CEO',   label: 'FSSAI CEO',           icon: '🏛️',   desc: '2nd Appeal (final authority), national dashboard',     color: 'border-red-300 hover:bg-red-50' },
-    { role: 'ADMIN', label: 'Admin',               icon: '⚙️',   desc: 'User management, masters, CMS administration',         color: 'border-gray-300 hover:bg-gray-50' },
+    { role: 'AO',    label: 'Authorized Officer',  icon: '👨‍⚖️',           color: 'border-green-300 hover:bg-green-50' },
+    { role: 'INS',   label: 'Inspector / TO',      icon: '🔬',        color: 'border-blue-300 hover:bg-blue-50' },
+    { role: 'IMP',   label: 'Importer',            icon: '🏭',           color: 'border-yellow-300 hover:bg-yellow-50' },
+    { role: 'CHA',   label: 'CHA',                 icon: '📦',           color: 'border-orange-300 hover:bg-orange-50' },
+    { role: 'LABS',  label: 'Lab',                 icon: '🧪',           color: 'border-teal-300 hover:bg-teal-50' },
+    { role: 'RD',    label: 'Regional Director',   icon: '👨‍💼',          color: 'border-purple-300 hover:bg-purple-50' },
+    { role: 'CEO',   label: 'FSSAI CEO',           icon: '🏛️',           color: 'border-red-300 hover:bg-red-50' },
+    { role: 'ADMIN', label: 'Admin',               icon: '⚙️',           color: 'border-gray-300 hover:bg-gray-50' },
   ];
   const [selectedRole, setSelectedRole] = useState(null);
   const [creds, setCreds] = useState({ username: '', password: '' });
@@ -2343,7 +2343,7 @@ function LoginScreen({ onLogin, onBack }) {
         </div>
         <div className="text-white/70 text-xs tracking-widest mb-1 uppercase">Food Safety and Standards Authority of India</div>
         <div className="text-white text-2xl font-bold">Food Import Clearance System</div>
-        <div className="text-white/50 text-sm mt-1">FICS v3.0 — Officer &amp; Stakeholder Portal</div>
+        <div className="text-white/50 text-sm mt-1">FICS — Officer &amp; Stakeholder Portal</div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6">
@@ -2403,7 +2403,7 @@ function LoginScreen({ onLogin, onBack }) {
           </p>
         </div>
       </div>
-      <p className="mt-5 text-white/30 text-xs">FICS Mockup — For demonstration purposes only &nbsp;|&nbsp; &copy; FSSAI 2024</p>
+      {/* <p className="mt-5 text-white/30 text-xs">FICS Mockup — For demonstration purposes only &nbsp;|&nbsp; &copy; FSSAI 2024</p> */}
     </div>
   );
 }
