@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import whatsappLogo from './assets/WhatsApp Image 2026-05-01 at 4.20.38 PM.jpeg';
 
 // ================================================================
 // FICS OFFICER PORTAL — Complete UI Mockup (AO / TO Screens)
@@ -130,19 +129,20 @@ const REVIEW_CASES = [
 
 // ─── Demo Users (one per role) ─────────────────────────────────────────────────
 const DEMO_USERS = [
-  { role: 'AO',    name: 'Suresh Menon',   designation: 'Authorized Officer',  org: 'FSSAI, JNPT Mumbai',       username: 'ao.suresh',  password: 'fics@2024' },
-  { role: 'TO',    name: 'Rajan Kumar',    designation: 'Technical Officer',   org: 'FSSAI, JNPT Mumbai',       username: 'to.rajan',   password: 'fics@2024' },
-  { role: 'IMP',   name: 'Ramesh Agarwal', designation: 'Importer',            org: 'M/s Global Foods Pvt Ltd', username: 'imp.ramesh', password: 'fics@2024' },
-  { role: 'CHA',   name: 'Vikram Shetty',  designation: 'CHA Representative',  org: 'ABC Customs House Agents', username: 'cha.vikram', password: 'fics@2024' },
-  { role: 'RD',    name: 'Ramesh Pillai',  designation: 'Regional Director',   org: 'FSSAI West Zone (JNPT)',   username: 'rd.pillai',  password: 'fics@2024' },
-  { role: 'CEO',   name: 'Dr. K. Prakash', designation: 'FSSAI CEO',           org: 'FSSAI Head Office, Delhi', username: 'ceo.fssai', password: 'fics@2024' },
-  { role: 'ADMIN', name: 'Pradeep Nair',   designation: 'System Administrator',org: 'FSSAI IT Cell',            username: 'admin.fics', password: 'fics@2024' },
+  { role: 'AO',    name: 'Suresh Menon',    designation: 'Authorized Officer',    org: 'FSSAI, JNPT Mumbai',            username: 'ao.suresh',   password: 'fics@2024' },
+  { role: 'INS',   name: 'Rajan Kumar',     designation: 'Inspector / Tech Officer', org: 'FSSAI, JNPT Mumbai',         username: 'ins.rajan',   password: 'fics@2024' },
+  { role: 'IMP',   name: 'Ramesh Agarwal',  designation: 'Importer',              org: 'M/s Global Foods Pvt Ltd',      username: 'imp.ramesh',  password: 'fics@2024' },
+  { role: 'CHA',   name: 'Vikram Shetty',   designation: 'CHA Representative',    org: 'ABC Customs House Agents',      username: 'cha.vikram',  password: 'fics@2024' },
+  { role: 'LABS',  name: 'Dr. Anita Rao',   designation: 'Lab Analyst',           org: 'FSSAI Referral Lab, Mumbai',    username: 'labs.anita',  password: 'fics@2024' },
+  { role: 'RD',    name: 'Ramesh Pillai',   designation: 'Regional Director',     org: 'FSSAI West Zone (JNPT)',        username: 'rd.pillai',   password: 'fics@2024' },
+  { role: 'CEO',   name: 'Dr. K. Prakash',  designation: 'FSSAI CEO',             org: 'FSSAI Head Office, Delhi',      username: 'ceo.fssai',   password: 'fics@2024' },
+  { role: 'ADMIN', name: 'Pradeep Nair',    designation: 'System Administrator',  org: 'FSSAI IT Cell',                 username: 'admin.fics',  password: 'fics@2024' },
 ];
 
 // ─── Role-wise Navigation (SRS §3.2) ──────────────────────────────────────────
 const ROLE_DEFAULT_SCREEN = {
-  AO: 'dashboard', TO: 'dashboard', IMP: 'imp_apps', CHA: 'imp_apps',
-  RD: 'review', CEO: 'review', ADMIN: 'admin_users',
+  AO: 'dashboard', INS: 'dashboard', IMP: 'imp_apps', CHA: 'imp_apps',
+  LABS: 'dashboard', RD: 'review', CEO: 'review', ADMIN: 'admin_users',
 };
 
 const ROLE_NAV = {
@@ -157,13 +157,13 @@ const ROLE_NAV = {
     { id: 'review',    label: 'Review & Appeal',      icon: '⚖️', badge: 3 },
     { id: 'reports',   label: 'Reports',              icon: '📊' },
   ],
-  TO: [
-    { id: 'dashboard', label: 'My Dashboard',        icon: '🏠' },
-    { id: 'bin',       label: 'Application Bin',     icon: '📋' },
-    { id: 'scrutiny',  label: 'Scrutiny Workbench', icon: '🔍', badge: 12 },
-    { id: 'vi',        label: 'Visual Inspection',   icon: '👁️', badge: 7 },
-    { id: 'lab',       label: 'Lab Results',         icon: '🧪', badge: 5 },
-    { id: 'reports',   label: 'Reports',             icon: '📊' },
+  INS: [
+    { id: 'dashboard', label: 'My Dashboard',         icon: '🏠' },
+    { id: 'bin',       label: 'Application Bin',      icon: '📋' },
+    { id: 'scrutiny',  label: 'Scrutiny Workbench',   icon: '🔍', badge: 5 },
+    { id: 'vi',        label: 'Visual Inspection',    icon: '👁️', badge: 7 },
+    { id: 'lab',       label: 'Lab Results',          icon: '🧪', badge: 5 },
+    { id: 'reports',   label: 'Reports',              icon: '📊' },
   ],
   IMP: [
     { id: 'imp_apps',    label: 'My Applications',     icon: '📋', badge: 3 },
@@ -178,6 +178,14 @@ const ROLE_NAV = {
     { id: 'imp_clarif',  label: 'Clarifications',       icon: '❓', badge: 3 },
     { id: 'imp_noc',     label: 'NOC / NCC Downloads',  icon: '📜' },
     { id: 'imp_review',  label: 'Review & Retest',      icon: '⚖️' },
+  ],
+  LABS: [
+    { id: 'dashboard',    label: 'Lab Dashboard',        icon: '🏠' },
+    { id: 'lab_samples',  label: 'Samples Received',     icon: '🧪', badge: 8 },
+    { id: 'lab_results',  label: 'Result Update',        icon: '📋', badge: 4 },
+    { id: 'lab_reports',  label: 'Report Generation',    icon: '📄', badge: 3 },
+    { id: 'lab_invoice',  label: 'Invoice Generation',   icon: '💰', badge: 2 },
+    { id: 'reports',      label: 'Reports',              icon: '📊' },
   ],
   RD: [
     { id: 'review',  label: 'Review Queue',  icon: '⚖️', badge: 2 },
@@ -285,7 +293,7 @@ function InfoBox({ type = 'info', children }) {
 // ─── Sidebar ───────────────────────────────────────────────────────────────────
 function Sidebar({ active, go, currentUser, onLogout }) {
   const nav = ROLE_NAV[currentUser?.role] ?? ROLE_NAV.AO;
-  const roleColor = { AO: 'text-green-400', TO: 'text-blue-400', IMP: 'text-yellow-400', CHA: 'text-orange-400', RD: 'text-purple-400', CEO: 'text-red-400', ADMIN: 'text-gray-400' };
+  const roleColor = { AO: 'text-green-400', INS: 'text-blue-400', IMP: 'text-yellow-400', CHA: 'text-orange-400', LABS: 'text-teal-400', RD: 'text-purple-400', CEO: 'text-red-400', ADMIN: 'text-gray-400' };
   return (
     <aside className="w-52 bg-gray-900 text-white flex flex-col flex-shrink-0 h-full">
       <div className="px-4 py-3.5 border-b border-gray-700">
@@ -314,7 +322,7 @@ function Sidebar({ active, go, currentUser, onLogout }) {
       <button onClick={onLogout} className="mx-3 mb-2 mt-1 flex items-center gap-2 px-3 py-2 rounded text-xs font-medium text-gray-400 hover:bg-gray-700 hover:text-white transition-colors">
         <span>🚪</span><span>Logout</span>
       </button>
-      <div className="px-3 py-2 border-t border-gray-700 text-xs text-gray-500">FICS</div>
+      <div className="px-3 py-2 border-t border-gray-700 text-xs text-gray-500">FICS v3.0 • FSSAI</div>
     </aside>
   );
 }
@@ -328,88 +336,467 @@ function PageHeader({ title, subtitle, actions }) {
   );
 }
 
-// ─── Screen 1: Dashboard ───────────────────────────────────────────────────────
-function Dashboard({ go }) {
+// ─── Shared stat-table helper (mirrors ASPX fieldset+table layout) ────────────
+function StatTable({ rows }) {
+  return (
+    <table className="w-full text-xs border-collapse">
+      <tbody>
+        {rows.map((r, i) => (
+          <tr key={i} className="border border-gray-300">
+            <td className={`px-2 py-1.5 font-semibold border-r border-gray-300 w-4/5 ${r.red ? 'text-red-700' : 'text-gray-800'}`}>{r.label}</td>
+            <td className="px-2 py-1.5 text-center font-bold text-blue-700 text-sm cursor-pointer hover:underline w-1/5">{r.val ?? '00'}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function Fieldset({ legend, children }) {
+  return (
+    <fieldset className="border border-gray-400 rounded p-0 mb-3">
+      <legend className="px-2 text-xs font-bold text-gray-700 ml-2">{legend}</legend>
+      <div className="p-1">{children}</div>
+    </fieldset>
+  );
+}
+
+// ─── AO Dashboard (matches AO/MyHome.aspx — 6 fieldsets in 3 rows × 2 cols) ──
+function AODashboard({ go }) {
   return (
     <div>
-      <PageHeader title="Officer Dashboard" subtitle="FICS Processing — JNPT Mumbai | Today: 30 Apr 2024" />
-      <div className="grid grid-cols-6 gap-3 mb-5">
+      <PageHeader title="Authorized Officer — Dashboard" subtitle="FICS Processing — JNPT Mumbai" actions={
+        <div className="flex gap-2">
+          <Btn size="xs" color="blue" outline onClick={() => go('bin')}>Application Bin</Btn>
+          <Btn size="xs" color="gray" outline onClick={() => go('reports')}>Reports</Btn>
+        </div>
+      }/>
+      <div className="grid grid-cols-2 gap-0 text-xs">
+        {/* Row 1 */}
+        <Fieldset legend="Scrutiny and Payment(s)">
+          <StatTable rows={[
+            { label: 'Total New Application(s)',                        val: 12 },
+            { label: "Application(s) Sent for Clarification",          val: 4  },
+            { label: "Application(s) Clarified by User",               val: 3  },
+            { label: "Application(s) waiting for Payment",             val: 5  },
+            { label: "Application(s) Rejected in Scrutiny",            val: 2  },
+            { label: "Application(s) Assigned to TO",                  val: 8  },
+            { label: "Application(s) Assigned to TO [Log Details]",    val: 8,  link: true },
+            { label: "Application(s) Pending For Scrutiny Check",      val: 6  },
+            { label: "Application(s) Pending For BOE Detail(s) Scrutiny", val: 2, red: true },
+          ]} />
+        </Fieldset>
+        <Fieldset legend="Appointment(s) and Visual Inspection">
+          <StatTable rows={[
+            { label: 'Application(s) Waiting for Assign Inspector',                       val: 9  },
+            { label: 'Total No. of Pending Appointment(s)',                               val: 7  },
+            { label: 'Appointment(s) Waiting for User Acknowledgement',                   val: 4  },
+            { label: 'Rejected Sample Appointment(s) Waiting for User Acknowledgement',   val: 1  },
+            { label: 'Appointment Change Request(s) by Applicants',                       val: 2  },
+            { label: 'Rejected Sample Appointment Change Request(s) by Applicants',       val: 0  },
+            { label: 'Appointment Change Request(s) by Inspectors',                       val: 1  },
+            { label: 'Rejected Sample Appointment Change Request(s) by Inspectors',       val: 0  },
+            { label: 'Application(s) for which discrepancies Reported by Inspectors',     val: 3  },
+          ]} />
+        </Fieldset>
+        {/* Row 2 */}
+        <Fieldset legend="Sampling & Sample Submission to Lab">
+          <StatTable rows={[
+            { label: 'Sample(s) to be Forwarded to Lab',     val: 6 },
+            { label: 'Sample(s) Forwarded to Lab',           val: 14 },
+            { label: 'Sample(s) Acknowledged by Lab',        val: 11 },
+            { label: 'Sample(s) not Fit For Analysis',       val: 1 },
+            { label: 'Application(s) Waiting for Sampling',  val: 5 },
+          ]} />
+        </Fieldset>
+        <Fieldset legend="Lab Analysis & NOC/NCC Generation">
+          <StatTable rows={[
+            { label: 'Application(s) for Discrepancy Verification',                   val: 3 },
+            { label: 'Application(s) for Which Discrepancies were Fixed by Applicants', val: 2 },
+            { label: 'NOC Rejection Recommendation by Inspectors',                    val: 1 },
+            { label: 'Application(s) for Issuance of NOC',                            val: 4 },
+            { label: 'Application(s) Assigned TO for NOC',                            val: 3 },
+            { label: 'Sample(s) Recommended for NOC by TO',                           val: 5 },
+          ]} />
+        </Fieldset>
+        {/* Row 3 */}
+        <Fieldset legend="CHA Registration(s)">
+          <StatTable rows={[
+            { label: 'New CHA Registration Application(s)',             val: 2 },
+            { label: 'Approved/Rejected CHA Registration Application(s)', val: 5 },
+            { label: 'Rejected CHA Registration Application(s)',        val: 1 },
+            { label: 'Pending CHA Profile Update Request(s)',           val: 3 },
+          ]} />
+        </Fieldset>
+        <Fieldset legend="Re-Testing">
+          <StatTable rows={[
+            { label: 'Number of Re-test Request(s) Received',        val: 3 },
+            { label: 'Re-test Application(s) for which Payment is done', val: 2 },
+            { label: 'Forward Re-test Sample(s) to Lab',             val: 1 },
+            { label: 'Re-test Application(s) for Issuance of NOC',   val: 1 },
+          ]} />
+        </Fieldset>
+      </div>
+      {/* Quick action row */}
+      <div className="flex gap-2 mt-2">
         {[
-          { label: 'Scrutiny Pending', val: 12, color: 'bg-blue-500', icon: '🔍', screen: 'scrutiny' },
-          { label: 'DD Verification', val: 3, color: 'bg-yellow-500', icon: '💳', screen: 'payment' },
-          { label: 'VI Pending', val: 7, color: 'bg-orange-500', icon: '👁️', screen: 'vi' },
-          { label: 'Lab Results Due', val: 5, color: 'bg-purple-500', icon: '🧪', screen: 'lab' },
-          { label: 'NOC Pending', val: 4, color: 'bg-indigo-500', icon: '📜', screen: 'noc' },
-          { label: 'Completed Today', val: 8, color: 'bg-green-500', icon: '✅', screen: 'reports' },
+          { label: '🔍 Scrutiny', screen: 'scrutiny', color: 'blue' },
+          { label: '💳 Payment Verification', screen: 'payment', color: 'yellow' },
+          { label: '👁️ Visual Inspection', screen: 'vi', color: 'orange' },
+          { label: '🧪 Lab Results', screen: 'lab', color: 'purple' },
+          { label: '📜 NOC Issuance', screen: 'noc', color: 'green' },
+          { label: '⚖️ Review & Appeal', screen: 'review', color: 'red' },
+        ].map(a => <Btn key={a.screen} size="xs" color={a.color} onClick={() => go(a.screen)}>{a.label}</Btn>)}
+      </div>
+    </div>
+  );
+}
+
+// ─── INS Dashboard (matches INS/INSPHome.aspx — Current Statistics) ───────────
+function INSDashboard({ go }) {
+  const sampleList = [
+    { consId: 'FICS/2024/3819', appntDt: '15-Apr-2024', appntTime: '10:00', cfs: 'CFS Nhava Sheva', product: 'Fresh Onions', radSmp: 0, normalSmp: 2 },
+    { consId: 'FICS/2024/3818', appntDt: '12-Apr-2024', appntTime: '11:00', cfs: 'Kolkata Port Trust', product: 'Dry Red Chilli', radSmp: 0, normalSmp: 2 },
+    { consId: 'FICS/2024/3817', appntDt: '10-Apr-2024', appntTime: '09:00', cfs: 'CFS Nhava Sheva', product: 'Wheat (Durum)', radSmp: 0, normalSmp: 1 },
+  ];
+  return (
+    <div>
+      <PageHeader title="Inspector / Technical Officer — Dashboard" subtitle="FICS — Current Work Queue" />
+      <Fieldset legend="CURRENT STATISTICS">
+        <StatTable rows={[
+          { label: 'New Inspection Assignments',                        val: 9 },
+          { label: 'Pending For Sampling',                              val: 7 },
+          { label: 'Rejected Sample Pending For Sampling',              val: 1 },
+          { label: 'Rejected Sample Pending For Clarification',         val: 2 },
+          { label: 'Samples to be forwarded to LAB',                    val: 6 },
+          { label: 'Discrepancy Verification Appointments',             val: 3 },
+          { label: 'Application(s) for Scrutiny',                       val: 5 },
+          { label: 'Sample(s) Pending For NOC Approval From AO',        val: 4 },
+          { label: 'Sample(s) Pending For Issuance of NOC',             val: 3 },
+          { label: 'Application(s) Assigned for Scrutiny [Log Details]', val: 5, link: true },
+          { label: 'Inspected Application(s)',                          val: 12, link: true },
+          { label: 'Samples forwarded to LAB',                          val: 14, link: true },
+        ]} />
+      </Fieldset>
+      <Fieldset legend="List of Application(s) — Forwarded By Authorized Officer">
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs border-collapse">
+            <thead>
+              <tr className="bg-gray-100">
+                {['Sr', 'Consignment ID', 'Appt Date', 'Appt Time', 'CFS Location', 'Product', 'Rad Samples', 'Normal Samples'].map(h => (
+                  <th key={h} className="border border-gray-300 px-2 py-1.5 text-center font-bold text-gray-700">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {sampleList.map((r, i) => (
+                <tr key={r.consId} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                  <td className="border border-gray-300 px-2 py-1.5 text-center">{i + 1}</td>
+                  <td className="border border-gray-300 px-2 py-1.5 text-blue-700 font-semibold cursor-pointer hover:underline">{r.consId}</td>
+                  <td className="border border-gray-300 px-2 py-1.5 text-center">{r.appntDt}</td>
+                  <td className="border border-gray-300 px-2 py-1.5 text-center">{r.appntTime}</td>
+                  <td className="border border-gray-300 px-2 py-1.5">{r.cfs}</td>
+                  <td className="border border-gray-300 px-2 py-1.5">{r.product}</td>
+                  <td className="border border-gray-300 px-2 py-1.5 text-center">{r.radSmp}</td>
+                  <td className="border border-gray-300 px-2 py-1.5 text-center">{r.normalSmp}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Fieldset>
+      <div className="flex gap-2 mt-2">
+        {[
+          { label: '🔍 Scrutiny', screen: 'scrutiny', color: 'blue' },
+          { label: '👁️ Visual Inspection', screen: 'vi', color: 'orange' },
+          { label: '🧪 Lab Results', screen: 'lab', color: 'purple' },
+          { label: '📊 Reports', screen: 'reports', color: 'gray' },
+        ].map(a => <Btn key={a.screen} size="xs" color={a.color} onClick={() => go(a.screen)}>{a.label}</Btn>)}
+      </div>
+    </div>
+  );
+}
+
+// ─── CHA Dashboard (matches CHA/ChaHome.aspx — 2-col stats + 2 grids) ─────────
+function CHADashboard({ go }) {
+  const activeApps = [
+    { cid: 'FICS/2024/3821', country: '🇺🇸', importer: 'Global Foods Pvt Ltd', product: 'Wheat Flour', scrutiny: 'Pending', payment: 'Pending', appt: '—', lab: '—', boe: '—' },
+    { cid: 'FICS/2024/3820', country: '🇨🇳', importer: 'Tasty Imports Pvt Ltd', product: 'Dried Chillies', scrutiny: 'Accepted', payment: 'Pending Verification', appt: '—', lab: '—', boe: 'PADS' },
+    { cid: 'FICS/2024/3819', country: '🇳🇱', importer: 'Heritage Foods Ltd', product: 'Fresh Onions', scrutiny: 'Accepted', payment: 'Success', appt: '15-Apr-2024 10:00', lab: '—', boe: '—' },
+  ];
+  const recentNOCs = [
+    { appId: 'FICS/2024/3817', boe: '4234563', product: 'Wheat (Durum) [10019900]', insOff: 'TO - Rajan Kumar', status: 'NOC Issued' },
+    { appId: 'FICS/2024/3815', boe: '4234561', product: 'Sunflower Oil [15121110]', insOff: 'TO - Priya Sharma', status: 'NOC Issued' },
+  ];
+  return (
+    <div>
+      <PageHeader title="Customs House Agent — Dashboard" subtitle="FICS — Client Application Status" />
+      <Fieldset legend="CURRENT STATISTICS">
+        <div className="grid grid-cols-2 gap-0">
+          <div>
+            <StatTable rows={[
+              { label: 'Total No. of New Application(s)',                            val: 5 },
+              { label: 'Total No. of Application(s) Waiting for Payment',           val: 2 },
+              { label: 'Total No. of Application(s) Waiting for Clarification',     val: 3 },
+              { label: 'Total No. of Appointment(s) to be Acknowledged',            val: 2 },
+              { label: 'Total No. of Re-Appointment(s) to be Acknowledged for sample(s) Rejected in Visual Inspection', val: 0 },
+              { label: 'Total No. of Application(s) For BoE Update (PADS)',         val: 1, red: true },
+            ]} />
+          </div>
+          <div>
+            <StatTable rows={[
+              { label: 'Total No. of Appointment Change Request(s) Sent',              val: 1 },
+              { label: 'Total No. of Application(s) With Rectifiable Discrepancies',  val: 2 },
+              { label: 'Total No. of Application(s) - For Payment (Re-Test Cases)',   val: 0 },
+              { label: 'Total No. of Inactive Application(s)',                         val: 3 },
+              { label: 'Total No. Appointment(s) For BoE Clarification (PADS)',       val: 1, red: true },
+            ]} />
+          </div>
+        </div>
+      </Fieldset>
+      <Fieldset legend="ACTIVE NOC APPLICATIONS">
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs border-collapse">
+            <thead>
+              <tr className="bg-gray-100">
+                {['Sr', 'Application ID', 'Country', 'Importer', 'Product(s)', 'Scrutiny', 'Payment', 'Appt Given', 'Lab Submit', 'BoE Status', 'Action'].map(h => (
+                  <th key={h} className="border border-gray-300 px-2 py-1.5 text-center font-bold text-gray-700 text-[10px]">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {activeApps.map((r, i) => (
+                <tr key={r.cid} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                  <td className="border border-gray-300 px-1 py-1.5 text-center">{i + 1}</td>
+                  <td className="border border-gray-300 px-1 py-1.5 text-blue-700 font-semibold cursor-pointer hover:underline">{r.cid}</td>
+                  <td className="border border-gray-300 px-1 py-1.5 text-center text-lg">{r.country}</td>
+                  <td className="border border-gray-300 px-1 py-1.5 text-[10px]">{r.importer}</td>
+                  <td className="border border-gray-300 px-1 py-1.5 text-[10px]">{r.product}</td>
+                  <td className="border border-gray-300 px-1 py-1.5 text-center"><Badge color={r.scrutiny === 'Accepted' ? 'green' : 'yellow'}>{r.scrutiny}</Badge></td>
+                  <td className="border border-gray-300 px-1 py-1.5 text-center"><Badge color={r.payment === 'Success' ? 'green' : 'yellow'}>{r.payment}</Badge></td>
+                  <td className="border border-gray-300 px-1 py-1.5 text-[10px]">{r.appt}</td>
+                  <td className="border border-gray-300 px-1 py-1.5 text-center">—</td>
+                  <td className="border border-gray-300 px-1 py-1.5 text-center">{r.boe || '—'}</td>
+                  <td className="border border-gray-300 px-1 py-1.5 text-center"><Btn size="xs" color="blue" outline onClick={() => go('imp_apps')}>View</Btn></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Fieldset>
+      <Fieldset legend="RECENT ISSUED NOC(s)">
+        <table className="w-full text-xs border-collapse">
+          <thead>
+            <tr className="bg-gray-100">
+              {['Sr', 'Application ID', 'Bill of Entry', 'Item Desc [HS Code]', 'Inspection Officer', 'Action'].map(h => (
+                <th key={h} className="border border-gray-300 px-2 py-1.5 text-center font-bold text-gray-700 text-[10px]">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {recentNOCs.map((r, i) => (
+              <tr key={r.appId} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                <td className="border border-gray-300 px-2 py-1.5 text-center">{i + 1}</td>
+                <td className="border border-gray-300 px-2 py-1.5 text-blue-700 font-semibold">{r.appId}</td>
+                <td className="border border-gray-300 px-2 py-1.5 text-center">{r.boe}</td>
+                <td className="border border-gray-300 px-2 py-1.5">{r.product}</td>
+                <td className="border border-gray-300 px-2 py-1.5">{r.insOff}</td>
+                <td className="border border-gray-300 px-2 py-1.5 text-center"><Btn size="xs" color="green" outline>View NOC</Btn></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Fieldset>
+    </div>
+  );
+}
+
+// ─── IMP Dashboard (matches Importer/Imp_Home.aspx) ───────────────────────────
+function IMPDashboard({ go }) {
+  const activeApps = [
+    { cid: 'FICS/2024/3821', country: '🇺🇸', product: 'Wheat Flour Preparations', scrutiny: 'Pending', payment: 'Pending', appt: '—', lab: '—', boe: '—' },
+    { cid: 'FICS/2024/3820', country: '🇨🇳', product: 'Dried Chillies', scrutiny: 'Accepted', payment: 'Pending Verification', appt: '—', lab: '—', boe: 'PADS' },
+  ];
+  const recentNOCs = [
+    { appId: 'FICS/2024/3817', boe: '4234563', product: 'Wheat (Durum) [10019900]', insOff: 'TO - Rajan Kumar' },
+    { appId: 'FICS/2024/3815', boe: '4234561', product: 'Sunflower Oil [15121110]', insOff: 'TO - Priya Sharma' },
+  ];
+  return (
+    <div>
+      <PageHeader title="Importer — Dashboard" subtitle="FICS — My Application Status" />
+      <Fieldset legend="CURRENT STATISTICS">
+        <StatTable rows={[
+          { label: 'Total New Application(s)',                        val: 3 },
+          { label: 'Application(s) Waiting for Payment',             val: 1 },
+          { label: 'Application(s) Waiting for Clarification',       val: 2 },
+          { label: 'Total Acknowledge Appointment',                   val: 1 },
+          { label: 'Total New Acknowledge change Request',            val: 0 },
+          { label: 'Total No. of Re-Appointment(s) to be Acknowledged for sample(s) Rejected in Visual Inspection', val: 0 },
+          { label: 'Total No. of Application(s) For BoE Update (PADS)', val: 1, red: true },
+          { label: 'Total No. Appointment(s) For BoE Clarification (PADS)', val: 0, red: true },
+        ]} />
+      </Fieldset>
+      <Fieldset legend="ACTIVE NOC APPLICATIONS">
+        <table className="w-full text-xs border-collapse">
+          <thead>
+            <tr className="bg-gray-100">
+              {['Sr', 'Application ID', 'Country', 'Product(s)', 'Scrutiny', 'Payment', 'Appt Given', 'Lab Submit', 'BoE Status', 'Action'].map(h => (
+                <th key={h} className="border border-gray-300 px-2 py-1.5 text-center font-bold text-gray-700 text-[10px]">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {activeApps.map((r, i) => (
+              <tr key={r.cid} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                <td className="border border-gray-300 px-1 py-1.5 text-center">{i + 1}</td>
+                <td className="border border-gray-300 px-1 py-1.5 text-blue-700 font-semibold cursor-pointer hover:underline" onClick={() => go('imp_apps')}>{r.cid}</td>
+                <td className="border border-gray-300 px-1 py-1.5 text-center text-base">{r.country}</td>
+                <td className="border border-gray-300 px-1 py-1.5 text-[10px]">{r.product}</td>
+                <td className="border border-gray-300 px-1 py-1.5 text-center"><Badge color={r.scrutiny === 'Accepted' ? 'green' : 'yellow'}>{r.scrutiny}</Badge></td>
+                <td className="border border-gray-300 px-1 py-1.5 text-center"><Badge color={r.payment === 'Success' ? 'green' : 'yellow'}>{r.payment}</Badge></td>
+                <td className="border border-gray-300 px-1 py-1.5">{r.appt}</td>
+                <td className="border border-gray-300 px-1 py-1.5 text-center">—</td>
+                <td className="border border-gray-300 px-1 py-1.5 text-center">{r.boe || '—'}</td>
+                <td className="border border-gray-300 px-1 py-1.5 text-center"><Btn size="xs" color="blue" outline onClick={() => go('imp_apps')}>View</Btn></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Fieldset>
+      <Fieldset legend="RECENT NOCs">
+        <table className="w-full text-xs border-collapse">
+          <thead>
+            <tr className="bg-gray-100">
+              {['Sr', 'Application ID', 'Bill of Entry', 'Item Desc [HS Code]', 'Inspection Officer', 'Action'].map(h => (
+                <th key={h} className="border border-gray-300 px-2 py-1.5 text-center font-bold text-gray-700 text-[10px]">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {recentNOCs.map((r, i) => (
+              <tr key={r.appId} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                <td className="border border-gray-300 px-2 py-1.5 text-center">{i + 1}</td>
+                <td className="border border-gray-300 px-2 py-1.5 text-blue-700 font-semibold">{r.appId}</td>
+                <td className="border border-gray-300 px-2 py-1.5 text-center">{r.boe}</td>
+                <td className="border border-gray-300 px-2 py-1.5">{r.product}</td>
+                <td className="border border-gray-300 px-2 py-1.5">{r.insOff}</td>
+                <td className="border border-gray-300 px-2 py-1.5 text-center"><Btn size="xs" color="green" outline onClick={() => go('imp_noc')}>View NOC</Btn></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Fieldset>
+    </div>
+  );
+}
+
+// ─── LABS Dashboard (matches Labs/LabHomeNew.aspx) ────────────────────────────
+function LABSDashboard({ go }) {
+  const sampleList = [
+    { smpId: 'SMP-2024-003', consId: 'FICS/2024/3818', desc: 'Dry Red Chilli (Crushed)', hs: '09042210', mode: 'Courier', dispDate: '11-Apr-2024' },
+    { smpId: 'SMP-2024-004', consId: 'FICS/2024/3818', desc: 'Chilli Powder', hs: '09042220', mode: 'Courier', dispDate: '11-Apr-2024' },
+    { smpId: 'SMP-2024-005', consId: 'FICS/2024/3817', desc: 'Wheat (Durum)', hs: '10019900', mode: 'Hand-Delivered', dispDate: '10-Apr-2024' },
+    { smpId: 'SMP-2024-006', consId: 'FICS/2024/3816', desc: 'Refined Sunflower Oil', hs: '15121110', mode: 'Courier', dispDate: '09-Apr-2024' },
+  ];
+  return (
+    <div>
+      <PageHeader title="Laboratory — Dashboard" subtitle="FSSAI Referral Lab — Sample Processing Queue" />
+      <Fieldset legend="CURRENT STATISTICS">
+        <StatTable rows={[
+          { label: 'Sample(s) Received for Analysis',            val: 8 },
+          { label: 'Sample(s) for Analysis Result Update',       val: 4 },
+          { label: 'Sample(s) for Analysis Report Generation',   val: 3 },
+          { label: 'Sample(s) Not Fit for Analysis',             val: 1 },
+          { label: 'Analysed Sample(s) for Invoice Generation',  val: 2 },
+          { label: '(Re-Test) Sample(s) Received for Analysis',  val: 1 },
+          { label: '(Re-Test) Sample(s) for Analysis Result Update', val: 0 },
+        ]} />
+      </Fieldset>
+      <Fieldset legend="List of Sample(s) Forwarded By Authorized Officers">
+        <table className="w-full text-xs border-collapse">
+          <thead>
+            <tr className="bg-gray-100">
+              {['Sr', 'Sample ID', 'Description', 'HS Code', 'Sample Dispatch Mode', 'Sample Dispatch Date'].map(h => (
+                <th key={h} className="border border-gray-300 px-2 py-1.5 text-center font-bold text-gray-700">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {sampleList.map((r, i) => (
+              <tr key={r.smpId} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                <td className="border border-gray-300 px-2 py-1.5 text-center">{i + 1}</td>
+                <td className="border border-gray-300 px-2 py-1.5 font-mono text-blue-700 font-semibold">{r.smpId}</td>
+                <td className="border border-gray-300 px-2 py-1.5">{r.desc}</td>
+                <td className="border border-gray-300 px-2 py-1.5 font-mono">{r.hs}</td>
+                <td className="border border-gray-300 px-2 py-1.5 text-center">{r.mode}</td>
+                <td className="border border-gray-300 px-2 py-1.5 text-center">{r.dispDate}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Fieldset>
+    </div>
+  );
+}
+
+// ─── ADMIN Dashboard ──────────────────────────────────────────────────────────
+function ADMINDashboard({ go }) {
+  return (
+    <div>
+      <PageHeader title="System Administrator — Dashboard" subtitle="FICS Administration Panel" actions={
+        <Btn size="xs" color="blue" onClick={() => go('admin_users')}>User Management</Btn>
+      }/>
+      <div className="grid grid-cols-4 gap-3 mb-4">
+        {[
+          { label: 'Total Users', val: 142, icon: '👥', color: 'bg-blue-500' },
+          { label: 'Active Officers', val: 38, icon: '👨‍⚖️', color: 'bg-green-500' },
+          { label: 'Registered Importers', val: 67, icon: '🏭', color: 'bg-yellow-500' },
+          { label: 'Registered CHAs', val: 29, icon: '📦', color: 'bg-orange-500' },
+          { label: 'Registered Labs', val: 8, icon: '🧪', color: 'bg-purple-500' },
+          { label: 'Active Ports', val: 12, icon: '🚢', color: 'bg-indigo-500' },
+          { label: 'Pending User Requests', val: 5, icon: '📋', color: 'bg-red-500' },
+          { label: 'System Alerts', val: 2, icon: '⚠️', color: 'bg-gray-600' },
         ].map(s => (
-          <div key={s.label} onClick={() => go(s.screen)} className="bg-white rounded-lg border border-gray-200 p-3 cursor-pointer hover:shadow-md transition-shadow">
+          <div key={s.label} className="bg-white rounded-lg border border-gray-200 p-3">
             <div className="flex items-center justify-between mb-1">
               <span className="text-lg">{s.icon}</span>
               <span className={`text-white text-xs font-bold px-2 py-0.5 rounded-full ${s.color}`}>{s.val}</span>
             </div>
-            <div className="text-xs text-gray-500 leading-tight">{s.label}</div>
+            <div className="text-xs text-gray-500">{s.label}</div>
           </div>
         ))}
       </div>
-
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <Card title="⚡ Pending Actions — Immediate Attention">
-          <div className="space-y-2">
-            {[
-              { msg: 'FICS/2024/3821 — SWIFT app awaiting scrutiny assignment', btn: 'Scrutiny', screen: 'scrutiny', id: 'FICS/2024/3821', color: 'blue' },
-              { msg: 'FICS/2024/3820 — DD payment pending AO verification', btn: 'Verify DD', screen: 'payment', id: 'FICS/2024/3820', color: 'yellow' },
-              { msg: 'FICS/2024/3819 — VI discrepancy (rectifiable) — action needed', btn: 'VI Action', screen: 'vi', id: 'FICS/2024/3819', color: 'orange' },
-              { msg: 'FICS/2024/3818 — Lab FAIL result — Aflatoxin exceeded', btn: 'Review', screen: 'lab', id: 'FICS/2024/3818', color: 'red' },
-              { msg: 'FICS/2024/3817 — TO recommended NOC — AO approval needed', btn: 'Issue NOC', screen: 'noc', id: 'FICS/2024/3817', color: 'green' },
-            ].map(a => (
-              <div key={a.id} className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0 gap-2">
-                <span className="text-xs text-gray-700 flex-1">{a.msg}</span>
-                <Btn size="xs" color={a.color} onClick={() => go(a.screen, a.id)}>{a.btn}</Btn>
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { label: 'User Management', icon: '👥', desc: 'Create, edit, deactivate officer and stakeholder accounts', screen: 'admin_users', color: 'blue' },
+          { label: 'Master Management', icon: '⚙️', desc: 'HS codes, ports, labs, product categories, fee masters', screen: 'admin_masters', color: 'indigo' },
+          { label: 'Circulars & CMS', icon: '📰', desc: 'Publish notices, circulars, advisories on portal', screen: 'admin_circulars', color: 'green' },
+        ].map(m => (
+          <Card key={m.label}>
+            <div className="flex items-start gap-3 cursor-pointer" onClick={() => go(m.screen)}>
+              <div className={`w-10 h-10 rounded-lg bg-${m.color}-100 flex items-center justify-center text-xl flex-shrink-0`}>{m.icon}</div>
+              <div>
+                <div className="font-semibold text-sm text-gray-900 mb-0.5">{m.label}</div>
+                <div className="text-xs text-gray-500 leading-relaxed">{m.desc}</div>
               </div>
-            ))}
-          </div>
-        </Card>
-
-        <Card title="Applications in Pipeline">
-          <table className="w-full text-xs">
-            <thead><tr className="text-gray-400 border-b">
-              <th className="text-left py-1.5">App ID</th><th className="text-left py-1.5">Importer</th><th className="text-left py-1.5">Source</th><th className="text-left py-1.5">Stage</th>
-            </tr></thead>
-            <tbody>{APPS.map(a => (
-              <tr key={a.id} className="border-b border-gray-50 hover:bg-gray-50 cursor-pointer" onClick={() => go('bin', a.id)}>
-                <td className="py-1.5 font-mono text-blue-600 text-xs">{a.id.split('/').slice(1).join('/')}</td>
-                <td className="py-1.5 truncate max-w-[120px]">{a.importer.replace('M/s ', '')}</td>
-                <td className="py-1.5"><Badge color={a.source === 'SWIFT' ? 'indigo' : 'gray'}>{a.source}</Badge></td>
-                <td className="py-1.5"><StageBadge stage={a.stage} /></td>
-              </tr>
-            ))}</tbody>
-          </table>
-        </Card>
-      </div>
-
-      <Card title="Application Stage Pipeline — Current Flow">
-        <div className="flex items-center gap-1.5 text-xs overflow-x-auto pb-1">
-          {[
-            { label: 'Scrutiny', count: 12, color: 'bg-blue-500' },
-            { label: 'Payment', count: 8, color: 'bg-yellow-500' },
-            { label: 'Visual Inspection', count: 7, color: 'bg-orange-500' },
-            { label: 'Lab Testing', count: 5, color: 'bg-purple-500' },
-            { label: 'NOC Pending', count: 4, color: 'bg-indigo-500' },
-            { label: 'NOC Issued', count: 48, color: 'bg-green-500' },
-            { label: 'NCC Issued', count: 6, color: 'bg-red-500' },
-          ].map((s, i, arr) => (
-            <div key={s.label} className="flex items-center gap-1.5 flex-shrink-0">
-              <div className={`${s.color} text-white rounded px-2.5 py-1.5 flex flex-col items-center min-w-[80px]`}>
-                <span className="text-lg font-bold leading-none">{s.count}</span>
-                <span className="text-[10px] leading-tight mt-0.5 text-center">{s.label}</span>
-              </div>
-              {i < arr.length - 1 && <span className="text-gray-400 text-base">→</span>}
             </div>
-          ))}
-        </div>
-      </Card>
+          </Card>
+        ))}
+      </div>
     </div>
   );
+}
+
+// ─── Screen 1: Dashboard (role-aware router) ───────────────────────────────────
+function Dashboard({ go, currentUser }) {
+  const role = currentUser?.role ?? 'AO';
+  if (role === 'AO')    return <AODashboard go={go} />;
+  if (role === 'INS')   return <INSDashboard go={go} />;
+  if (role === 'CHA')   return <CHADashboard go={go} />;
+  if (role === 'IMP')   return <IMPDashboard go={go} />;
+  if (role === 'LABS')  return <LABSDashboard go={go} />;
+  if (role === 'ADMIN') return <ADMINDashboard go={go} />;
+  return <AODashboard go={go} />;
 }
 
 // ─── Screen 2: Application Bin ─────────────────────────────────────────────────
@@ -1625,8 +2012,17 @@ function HeroPage({ onLoginClick }) {
 
             {/* FSSAI logo block */}
             <div className="flex items-center gap-3">
-              <div className="flex-shrink-0">
-                <img src={whatsappLogo} alt="FSSAI Logo" className="h-14 w-auto object-contain" />
+              <div className="w-14 h-14 rounded-full bg-white border-2 border-[#006633] flex items-center justify-center shadow-sm flex-shrink-0">
+                <svg viewBox="0 0 48 48" className="w-10 h-10">
+                  <circle cx="24" cy="24" r="22" fill="#006633" />
+                  <text x="24" y="30" textAnchor="middle" fill="white" fontSize="18" fontWeight="bold" fontFamily="Arial">F</text>
+                </svg>
+              </div>
+              <div>
+                <div className="text-[11px] font-black text-[#006633] tracking-wider leading-tight uppercase">Food Safety and Standards</div>
+                <div className="text-[11px] font-black text-[#006633] tracking-wider leading-tight uppercase">Authority of India</div>
+                <div className="text-[10px] text-gray-400 italic leading-tight mt-0.5">Inspiring Trust, Assuring Safe &amp; Nutritious Food</div>
+                <div className="text-[9px] text-gray-400 leading-tight">Ministry of Health and Family Welfare</div>
               </div>
             </div>
           </div>
@@ -1699,7 +2095,7 @@ function HeroPage({ onLoginClick }) {
                 </div>
                 {/* Showcase content */}
                 <div className="bg-gradient-to-br from-[#006633] to-[#004422] px-6 py-6 text-white">
-                  <div className="text-lg font-black tracking-wide mb-1">FICS</div>
+                  <div className="text-lg font-black tracking-wide mb-1">FICS 2.0</div>
                   <div className="text-sm font-semibold mb-3 text-green-200">Food Import Clearance System</div>
                   <div className="space-y-2">
                     {[
@@ -1732,7 +2128,7 @@ function HeroPage({ onLoginClick }) {
                 <p className="text-sm text-gray-600 leading-relaxed">
                   FICS is FSSAI's digital platform for end-to-end processing of food import consignments —
                   from SWIFT Bill of Entry intake to NOC/NCC issuance. Replacing the legacy WCF system,
-                  FICS ensures transparent, paperless, and rule-based clearance at all Indian ports.
+                  FICS 2.0 ensures transparent, paperless, and rule-based clearance at all Indian ports.
                 </p>
               </div>
 
@@ -1904,13 +2300,14 @@ function HeroPage({ onLoginClick }) {
 // ─── Login Screen ──────────────────────────────────────────────────────────────
 function LoginScreen({ onLogin, onBack }) {
   const roleCards = [
-    { role: 'AO',    label: 'Authorized Officer',  icon: '👨‍⚖️',  color: 'border-green-300 hover:bg-green-50' },
-    { role: 'TO',    label: 'Technical Officer',   icon: '🔬',     color: 'border-blue-300 hover:bg-blue-50' },
-    { role: 'IMP',   label: 'Importer',            icon: '🏭',          color: 'border-yellow-300 hover:bg-yellow-50' },
-    { role: 'CHA',   label: 'CHA',                 icon: '📦',              color: 'border-orange-300 hover:bg-orange-50' },
-    { role: 'RD',    label: 'Regional Director',   icon: '👨‍💼',               color: 'border-purple-300 hover:bg-purple-50' },
-    { role: 'CEO',   label: 'FSSAI CEO',           icon: '🏛️',       color: 'border-red-300 hover:bg-red-50' },
-    { role: 'ADMIN', label: 'Admin',               icon: '⚙️',         color: 'border-gray-300 hover:bg-gray-50' },
+    { role: 'AO',    label: 'Authorized Officer',  icon: '👨‍⚖️', desc: 'Scrutiny, Payment, VI, Lab, NOC issuance',            color: 'border-green-300 hover:bg-green-50' },
+    { role: 'INS',   label: 'Inspector / TO',      icon: '🔬',   desc: 'Inspection assignments, sampling, lab forwarding',     color: 'border-blue-300 hover:bg-blue-50' },
+    { role: 'IMP',   label: 'Importer',            icon: '🏭',   desc: 'Application status, payment, NOC/NCC download',        color: 'border-yellow-300 hover:bg-yellow-50' },
+    { role: 'CHA',   label: 'CHA',                 icon: '📦',   desc: 'Client applications, clearance tracking',              color: 'border-orange-300 hover:bg-orange-50' },
+    { role: 'LABS',  label: 'Lab',                 icon: '🧪',   desc: 'Sample receipt, analysis, report & invoice generation', color: 'border-teal-300 hover:bg-teal-50' },
+    { role: 'RD',    label: 'Regional Director',   icon: '👨‍💼',  desc: '1st Review decisions, port performance',               color: 'border-purple-300 hover:bg-purple-50' },
+    { role: 'CEO',   label: 'FSSAI CEO',           icon: '🏛️',   desc: '2nd Appeal (final authority), national dashboard',     color: 'border-red-300 hover:bg-red-50' },
+    { role: 'ADMIN', label: 'Admin',               icon: '⚙️',   desc: 'User management, masters, CMS administration',         color: 'border-gray-300 hover:bg-gray-50' },
   ];
   const [selectedRole, setSelectedRole] = useState(null);
   const [creds, setCreds] = useState({ username: '', password: '' });
@@ -1946,13 +2343,13 @@ function LoginScreen({ onLogin, onBack }) {
         </div>
         <div className="text-white/70 text-xs tracking-widest mb-1 uppercase">Food Safety and Standards Authority of India</div>
         <div className="text-white text-2xl font-bold">Food Import Clearance System</div>
-        <div className="text-white/50 text-sm mt-1">FICS — Officer &amp; Stakeholder Portal</div>
+        <div className="text-white/50 text-sm mt-1">FICS v3.0 — Officer &amp; Stakeholder Portal</div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6">
         <p className="text-center text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">Select Your Role</p>
 
-        <div className="grid grid-cols-7 gap-2 mb-5">
+        <div className="grid grid-cols-8 gap-2 mb-5">
           {roleCards.map(r => (
             <button key={r.role} onClick={() => pickRole(r.role)}
               className={`border-2 rounded-xl p-3 text-center transition-all ${selectedRole === r.role ? r.color + ' ring-2 ring-green-500 bg-green-50' : 'border-gray-200 ' + r.color}`}>
@@ -2006,7 +2403,7 @@ function LoginScreen({ onLogin, onBack }) {
           </p>
         </div>
       </div>
-      {/* <p className="mt-5 text-white/30 text-xs">FICS Mockup — For demonstration purposes only &nbsp;|&nbsp; &copy; FSSAI 2024</p> */}
+      <p className="mt-5 text-white/30 text-xs">FICS Mockup — For demonstration purposes only &nbsp;|&nbsp; &copy; FSSAI 2024</p>
     </div>
   );
 }
@@ -2919,7 +3316,7 @@ export default function App() {
 
   const u = currentUser;
   const SCREENS = {
-    dashboard:       <Dashboard go={go} />,
+    dashboard:       <Dashboard go={go} currentUser={u} />,
     bin:             <ApplicationBin go={go} selectedId={selectedId} />,
     scrutiny:        <ScrutinyScreen go={go} selectedId={selectedId} />,
     payment:         <PaymentVerification go={go} selectedId={selectedId} />,
