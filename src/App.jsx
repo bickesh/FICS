@@ -1914,7 +1914,7 @@ function HeroPage({ onLogin }) {
           {/* FICS Portal Name */}
           <div className="flex-shrink-0">
             <div className="text-[18px] font-black text-[#FF6200] leading-tight tracking-tight">Food Import Clearance System</div>
-            <div className="text-[10px] text-gray-400 leading-tight mt-0.5">FSSAI — Food Import Clearance &amp; NOC Portal</div>
+            {/* <div className="text-[10px] text-gray-400 leading-tight mt-0.5">FSSAI — Food Import Clearance &amp; NOC Portal</div> */}
           </div>
 
           {/* Nav links (flexible center) */}
@@ -1950,7 +1950,7 @@ function HeroPage({ onLogin }) {
       {/* ── Hero Section ────────────────────────────────────────────────────── */}
       <main className="flex-1">
         <section className="bg-white py-10 border-b border-gray-100">
-          <div className="max-w-7xl mx-auto px-8 flex items-center gap-12">
+          <div className="max-w-[1440px] mx-auto px-6 py-3 flex items-center justify-between">
 
             {/* LEFT: Headline + CTAs + badges */}
             <div className="flex-1 min-w-0">
@@ -1987,24 +1987,15 @@ function HeroPage({ onLogin }) {
             </div>
 
             {/* RIGHT: Flowchart image */}
-            <div className="flex-shrink-0 w-[55%]">
-              <div className="rounded-2xl border border-gray-200 shadow-lg overflow-hidden bg-white p-3">
-                <img
-                  src={ficsFlowchart}
-                  alt="FICS Import Clearance Process Flow"
-                  className="w-full h-auto object-contain rounded-xl"
-                  onError={e => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
-                />
-                {/* Fallback if image not found */}
-                <div className="hidden items-center justify-center h-48 text-gray-400 text-sm flex-col gap-2">
-                  <span className="text-4xl">📊</span>
-                  <span>FICS Process Flowchart</span>
-                  <span className="text-xs text-gray-300">fics-flowchart.png</span>
-                </div>
-              </div>
+            <div className="flex-shrink-0 w-[62%] max-w-[860px]">
+              <img
+                src={ficsFlowchart}
+                alt="FICS Import Clearance Process Flow"
+                className="w-full max-h-[560px] object-contain"
+                onError={e => {
+                  e.target.style.display = 'none';
+                }}
+              />
             </div>
 
           </div>
@@ -2080,6 +2071,10 @@ function HeroPage({ onLogin }) {
           </div>
         </section>
       </main>
+
+
+
+      
 
       {/* ── Footer ──────────────────────────────────────────────────────────── */}
       <footer className="bg-[#0D1B2A] text-white">
