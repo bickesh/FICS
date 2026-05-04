@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import fssaiLogo from './fssai-logo.png';
+import ficsFlowchart from './fics-flowchart.png';
 
 // ================================================================
 // FICS OFFICER PORTAL — Complete UI Mockup (AO / TO Screens)
@@ -301,7 +303,7 @@ function Sidebar({ active, go, currentUser, onLogout }) {
           <div className="w-8 h-8 bg-green-500 rounded flex items-center justify-center text-xs font-bold">F</div>
           <div>
             <div className="text-xs font-bold">FICS Portal</div>
-            <div className="text-xs text-gray-400">FSSAI</div>
+            {/* <div className="text-xs text-gray-400">FSSAI v3.0</div> */}
           </div>
         </div>
       </div>
@@ -322,7 +324,7 @@ function Sidebar({ active, go, currentUser, onLogout }) {
       <button onClick={onLogout} className="mx-3 mb-2 mt-1 flex items-center gap-2 px-3 py-2 rounded text-xs font-medium text-gray-400 hover:bg-gray-700 hover:text-white transition-colors">
         <span>🚪</span><span>Logout</span>
       </button>
-      <div className="px-3 py-2 border-t border-gray-700 text-xs text-gray-500">FICS • FSSAI</div>
+      <div className="px-3 py-2 border-t border-gray-700 text-xs text-gray-500"></div>
     </aside>
   );
 }
@@ -337,14 +339,18 @@ function PageHeader({ title, subtitle, actions }) {
 }
 
 // ─── Shared stat-table helper (mirrors ASPX fieldset+table layout) ────────────
-function StatTable({ rows }) {
+function StatTable({ rows, go }) {
   return (
     <table className="w-full text-xs border-collapse">
       <tbody>
         {rows.map((r, i) => (
           <tr key={i} className="border border-gray-300">
             <td className={`px-2 py-1.5 font-semibold border-r border-gray-300 w-4/5 ${r.red ? 'text-red-700' : 'text-gray-800'}`}>{r.label}</td>
-            <td className="px-2 py-1.5 text-center font-bold text-blue-700 text-sm cursor-pointer hover:underline w-1/5">{r.val ?? '00'}</td>
+            <td
+              className={`px-2 py-1.5 text-center font-bold text-sm w-1/5 ${go && r.screen ? 'text-blue-700 underline cursor-pointer hover:bg-blue-50' : 'text-blue-700'}`}
+              onClick={go && r.screen ? () => go(r.screen) : undefined}
+              title={go && r.screen ? `Click to view ${r.label}` : undefined}
+            >{r.val ?? '00'}</td>
           </tr>
         ))}
       </tbody>
@@ -374,66 +380,66 @@ function AODashboard({ go }) {
       <div className="grid grid-cols-2 gap-0 text-xs">
         {/* Row 1 */}
         <Fieldset legend="Scrutiny and Payment(s)">
-          <StatTable rows={[
-            { label: 'Total New Application(s)',                        val: 12 },
-            { label: "Application(s) Sent for Clarification",          val: 4  },
-            { label: "Application(s) Clarified by User",               val: 3  },
-            { label: "Application(s) waiting for Payment",             val: 5  },
-            { label: "Application(s) Rejected in Scrutiny",            val: 2  },
-            { label: "Application(s) Assigned to TO",                  val: 8  },
-            { label: "Application(s) Assigned to TO [Log Details]",    val: 8,  link: true },
-            { label: "Application(s) Pending For Scrutiny Check",      val: 6  },
-            { label: "Application(s) Pending For BOE Detail(s) Scrutiny", val: 2, red: true },
+          <StatTable go={go} rows={[
+            { label: 'Total New Application(s)',                           val: 12, screen: 'scrutiny' },
+            { label: "Application(s) Sent for Clarification",             val: 4,  screen: 'scrutiny' },
+            { label: "Application(s) Clarified by User",                  val: 3,  screen: 'scrutiny' },
+            { label: "Application(s) waiting for Payment",                val: 5,  screen: 'payment'  },
+            { label: "Application(s) Rejected in Scrutiny",               val: 2,  screen: 'bin'      },
+            { label: "Application(s) Assigned to TO",                     val: 8,  screen: 'scrutiny' },
+            { label: "Application(s) Assigned to TO [Log Details]",       val: 8,  screen: 'scrutiny' },
+            { label: "Application(s) Pending For Scrutiny Check",         val: 6,  screen: 'scrutiny' },
+            { label: "Application(s) Pending For BOE Detail(s) Scrutiny", val: 2,  screen: 'bin', red: true },
           ]} />
         </Fieldset>
         <Fieldset legend="Appointment(s) and Visual Inspection">
-          <StatTable rows={[
-            { label: 'Application(s) Waiting for Assign Inspector',                       val: 9  },
-            { label: 'Total No. of Pending Appointment(s)',                               val: 7  },
-            { label: 'Appointment(s) Waiting for User Acknowledgement',                   val: 4  },
-            { label: 'Rejected Sample Appointment(s) Waiting for User Acknowledgement',   val: 1  },
-            { label: 'Appointment Change Request(s) by Applicants',                       val: 2  },
-            { label: 'Rejected Sample Appointment Change Request(s) by Applicants',       val: 0  },
-            { label: 'Appointment Change Request(s) by Inspectors',                       val: 1  },
-            { label: 'Rejected Sample Appointment Change Request(s) by Inspectors',       val: 0  },
-            { label: 'Application(s) for which discrepancies Reported by Inspectors',     val: 3  },
+          <StatTable go={go} rows={[
+            { label: 'Application(s) Waiting for Assign Inspector',                     val: 9,  screen: 'vi' },
+            { label: 'Total No. of Pending Appointment(s)',                              val: 7,  screen: 'vi' },
+            { label: 'Appointment(s) Waiting for User Acknowledgement',                 val: 4,  screen: 'vi' },
+            { label: 'Rejected Sample Appointment(s) Waiting for User Acknowledgement', val: 1,  screen: 'vi' },
+            { label: 'Appointment Change Request(s) by Applicants',                     val: 2,  screen: 'vi' },
+            { label: 'Rejected Sample Appointment Change Request(s) by Applicants',     val: 0,  screen: 'vi' },
+            { label: 'Appointment Change Request(s) by Inspectors',                     val: 1,  screen: 'vi' },
+            { label: 'Rejected Sample Appointment Change Request(s) by Inspectors',     val: 0,  screen: 'vi' },
+            { label: 'Application(s) for which discrepancies Reported by Inspectors',   val: 3,  screen: 'vi' },
           ]} />
         </Fieldset>
         {/* Row 2 */}
         <Fieldset legend="Sampling & Sample Submission to Lab">
-          <StatTable rows={[
-            { label: 'Sample(s) to be Forwarded to Lab',     val: 6 },
-            { label: 'Sample(s) Forwarded to Lab',           val: 14 },
-            { label: 'Sample(s) Acknowledged by Lab',        val: 11 },
-            { label: 'Sample(s) not Fit For Analysis',       val: 1 },
-            { label: 'Application(s) Waiting for Sampling',  val: 5 },
+          <StatTable go={go} rows={[
+            { label: 'Sample(s) to be Forwarded to Lab',     val: 6,  screen: 'lab' },
+            { label: 'Sample(s) Forwarded to Lab',           val: 14, screen: 'lab' },
+            { label: 'Sample(s) Acknowledged by Lab',        val: 11, screen: 'lab' },
+            { label: 'Sample(s) not Fit For Analysis',       val: 1,  screen: 'lab' },
+            { label: 'Application(s) Waiting for Sampling',  val: 5,  screen: 'vi'  },
           ]} />
         </Fieldset>
         <Fieldset legend="Lab Analysis & NOC/NCC Generation">
-          <StatTable rows={[
-            { label: 'Application(s) for Discrepancy Verification',                   val: 3 },
-            { label: 'Application(s) for Which Discrepancies were Fixed by Applicants', val: 2 },
-            { label: 'NOC Rejection Recommendation by Inspectors',                    val: 1 },
-            { label: 'Application(s) for Issuance of NOC',                            val: 4 },
-            { label: 'Application(s) Assigned TO for NOC',                            val: 3 },
-            { label: 'Sample(s) Recommended for NOC by TO',                           val: 5 },
+          <StatTable go={go} rows={[
+            { label: 'Application(s) for Discrepancy Verification',                    val: 3, screen: 'vi'  },
+            { label: 'Application(s) for Which Discrepancies were Fixed by Applicants', val: 2, screen: 'vi' },
+            { label: 'NOC Rejection Recommendation by Inspectors',                     val: 1, screen: 'noc' },
+            { label: 'Application(s) for Issuance of NOC',                             val: 4, screen: 'noc' },
+            { label: 'Application(s) Assigned TO for NOC',                             val: 3, screen: 'noc' },
+            { label: 'Sample(s) Recommended for NOC by TO',                            val: 5, screen: 'noc' },
           ]} />
         </Fieldset>
         {/* Row 3 */}
         <Fieldset legend="CHA Registration(s)">
-          <StatTable rows={[
-            { label: 'New CHA Registration Application(s)',             val: 2 },
-            { label: 'Approved/Rejected CHA Registration Application(s)', val: 5 },
-            { label: 'Rejected CHA Registration Application(s)',        val: 1 },
-            { label: 'Pending CHA Profile Update Request(s)',           val: 3 },
+          <StatTable go={go} rows={[
+            { label: 'New CHA Registration Application(s)',               val: 2, screen: 'admin_users' },
+            { label: 'Approved/Rejected CHA Registration Application(s)', val: 5, screen: 'admin_users' },
+            { label: 'Rejected CHA Registration Application(s)',          val: 1, screen: 'admin_users' },
+            { label: 'Pending CHA Profile Update Request(s)',             val: 3, screen: 'admin_users' },
           ]} />
         </Fieldset>
         <Fieldset legend="Re-Testing">
-          <StatTable rows={[
-            { label: 'Number of Re-test Request(s) Received',        val: 3 },
-            { label: 'Re-test Application(s) for which Payment is done', val: 2 },
-            { label: 'Forward Re-test Sample(s) to Lab',             val: 1 },
-            { label: 'Re-test Application(s) for Issuance of NOC',   val: 1 },
+          <StatTable go={go} rows={[
+            { label: 'Number of Re-test Request(s) Received',         val: 3, screen: 'review' },
+            { label: 'Re-test Application(s) for which Payment is done', val: 2, screen: 'review' },
+            { label: 'Forward Re-test Sample(s) to Lab',              val: 1, screen: 'review' },
+            { label: 'Re-test Application(s) for Issuance of NOC',    val: 1, screen: 'review' },
           ]} />
         </Fieldset>
       </div>
@@ -463,19 +469,19 @@ function INSDashboard({ go }) {
     <div>
       <PageHeader title="Inspector / Technical Officer — Dashboard" subtitle="FICS — Current Work Queue" />
       <Fieldset legend="CURRENT STATISTICS">
-        <StatTable rows={[
-          { label: 'New Inspection Assignments',                        val: 9 },
-          { label: 'Pending For Sampling',                              val: 7 },
-          { label: 'Rejected Sample Pending For Sampling',              val: 1 },
-          { label: 'Rejected Sample Pending For Clarification',         val: 2 },
-          { label: 'Samples to be forwarded to LAB',                    val: 6 },
-          { label: 'Discrepancy Verification Appointments',             val: 3 },
-          { label: 'Application(s) for Scrutiny',                       val: 5 },
-          { label: 'Sample(s) Pending For NOC Approval From AO',        val: 4 },
-          { label: 'Sample(s) Pending For Issuance of NOC',             val: 3 },
-          { label: 'Application(s) Assigned for Scrutiny [Log Details]', val: 5, link: true },
-          { label: 'Inspected Application(s)',                          val: 12, link: true },
-          { label: 'Samples forwarded to LAB',                          val: 14, link: true },
+        <StatTable go={go} rows={[
+          { label: 'New Inspection Assignments',                         val: 9,  screen: 'vi'       },
+          { label: 'Pending For Sampling',                               val: 7,  screen: 'vi'       },
+          { label: 'Rejected Sample Pending For Sampling',               val: 1,  screen: 'vi'       },
+          { label: 'Rejected Sample Pending For Clarification',          val: 2,  screen: 'scrutiny' },
+          { label: 'Samples to be forwarded to LAB',                     val: 6,  screen: 'lab'      },
+          { label: 'Discrepancy Verification Appointments',              val: 3,  screen: 'vi'       },
+          { label: 'Application(s) for Scrutiny',                        val: 5,  screen: 'scrutiny' },
+          { label: 'Sample(s) Pending For NOC Approval From AO',         val: 4,  screen: 'noc'      },
+          { label: 'Sample(s) Pending For Issuance of NOC',              val: 3,  screen: 'noc'      },
+          { label: 'Application(s) Assigned for Scrutiny [Log Details]', val: 5,  screen: 'scrutiny' },
+          { label: 'Inspected Application(s)',                           val: 12, screen: 'bin'      },
+          { label: 'Samples forwarded to LAB',                           val: 14, screen: 'lab'      },
         ]} />
       </Fieldset>
       <Fieldset legend="List of Application(s) — Forwarded By Authorized Officer">
@@ -976,21 +982,6 @@ function ScrutinyScreen({ go, selectedId }) {
               </div>
             </Card>
 
-            {/* Assign TO */}
-            <Card title="Assign Technical Officer for Scrutiny">
-              <div className="flex items-center gap-3">
-                <select value={assignTO} onChange={e => setAssignTO(e.target.value)}
-                  className="text-sm border border-gray-300 rounded px-3 py-2 flex-1">
-                  <option value="">-- Select TO for Scrutiny --</option>
-                  {OFFICERS.map(o => <option key={o}>{o}</option>)}
-                </select>
-                <Btn color="blue">Assign TO</Btn>
-                {sel.assignedTO && <Btn color="gray" outline>Recall from TO</Btn>}
-              </div>
-              {sel.assignedTO && <p className="text-xs text-gray-500 mt-2">Currently assigned: <strong>{sel.assignedTO}</strong></p>}
-              <InfoBox type="info" className="mt-3">If no TO assigned, AO performs scrutiny directly. All TO decisions require AO verification before taking effect.</InfoBox>
-            </Card>
-
             {/* Clarification History */}
             <Card title="Query / Clarification History">
               {sel.clarifications.length === 0
@@ -1095,33 +1086,31 @@ function ScrutinyScreen({ go, selectedId }) {
 function PaymentVerification({ go, selectedId }) {
   const pending = APPS.filter(a => a.stage === 'payment');
   const [sel, setSel] = useState(selectedId ? APPS.find(a => a.id === selectedId) : pending[0]);
-  const [ddAction, setDdAction] = useState(null);
-  const [rejectNote, setRejectNote] = useState('');
   const [modal, setModal] = useState(false);
 
   return (
     <div>
-      <PageHeader title="Payment Verification" subtitle="AO verifies Demand Draft payments. Online payments are auto-verified." />
+      <PageHeader title="Payment Verification" subtitle="Online payments are auto-verified by the system. AO confirms and forwards application for Visual Inspection." />
       <div className="grid grid-cols-4 gap-4">
         <div className="col-span-1 space-y-2">
-          <div className="text-xs font-semibold text-gray-500 uppercase mb-2">DD Pending ({pending.length})</div>
+          <div className="text-xs font-semibold text-gray-500 uppercase mb-2">Payment Pending ({pending.length})</div>
           {pending.map(a => (
             <div key={a.id} onClick={() => setSel(a)}
               className={`p-3 rounded-lg border cursor-pointer bg-white ${sel?.id === a.id ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 hover:border-yellow-300'}`}>
               <div className="text-xs font-mono font-semibold text-blue-700">{a.id}</div>
               <div className="text-xs text-gray-600 truncate">{a.importer.replace('M/s ', '')}</div>
-              <div className="text-xs text-gray-400 mt-1">DD: {a.payment?.ddNo}</div>
-              <div className="text-xs text-gray-400">{a.payment?.bank}</div>
+              <div className="text-xs text-gray-400 mt-1">Mode: {a.payment?.mode ?? 'Online'}</div>
+              <div className="text-xs text-gray-400">Txn: {a.payment?.txnId ?? '—'}</div>
             </div>
           ))}
 
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="text-xs font-semibold text-blue-800 mb-1.5">Payment Rules</div>
             <ul className="text-xs text-blue-700 space-y-1 list-disc list-inside">
-              <li>Online payment: auto-verified</li>
-              <li>DD: AO must verify manually</li>
+              <li>Online payment: auto-verified by system</li>
+              <li>AO confirms before VI scheduling</li>
               <li>Payment mandatory before VI</li>
-              <li>Retest: online payment only</li>
+              <li>Retest fee: online payment only</li>
             </ul>
           </div>
         </div>
@@ -1129,62 +1118,37 @@ function PaymentVerification({ go, selectedId }) {
         <div className="col-span-3 space-y-4">
           {sel?.payment && (
             <>
-              <Card title="Application & Payment Summary">
+              <Card title="Application & Online Payment Summary">
                 <div className="grid grid-cols-4 gap-3 mb-4">
                   <Field label="Application ID" value={sel.id} />
                   <Field label="Importer" value={sel.importer} />
                   <Field label="Port" value={sel.port} />
                   <Field label="CHA" value={sel.cha} />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <div className="text-xs font-semibold text-yellow-800 mb-3">Demand Draft Details</div>
-                    <dl className="grid grid-cols-2 gap-2">
-                      <Field label="Mode" value="Demand Draft" />
-                      <Field label="DD Number" value={sel.payment.ddNo} />
-                      <Field label="Bank" value={sel.payment.bank} />
-                      <Field label="Amount" value={sel.payment.amount} />
-                    </dl>
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="text-xs font-semibold text-green-800 mb-3 flex items-center gap-2">
+                    <span>💳</span> Online Payment Details
                   </div>
-                  <div>
-                    <div className="text-xs font-medium text-gray-600 mb-2">Uploaded DD Scan / Receipt</div>
-                    <div className="h-36 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center flex-col gap-2 text-gray-400">
-                      <span className="text-2xl">📄</span>
-                      <span className="text-xs">DD_Scan_{sel.id.replace(/\//g, '_')}.pdf</span>
-                      <Btn size="xs" color="blue" outline>View Document</Btn>
-                    </div>
+                  <div className="grid grid-cols-4 gap-3">
+                    <Field label="Payment Mode" value="Online" />
+                    <Field label="Amount" value={sel.payment.amount} />
+                    <Field label="Transaction ID" value={sel.payment.txnId ?? '—'} />
+                    <Field label="Payment Status" value={sel.payment.status} />
+                    <Field label="Payment Gateway" value="SBI ePay / NIC" />
+                    <Field label="Payment Date" value="12 Apr 2026" />
+                    <Field label="Fee Category" value="Scrutiny Fee" />
+                    <Field label="Auto-Verified" value="Yes — System Verified" />
                   </div>
                 </div>
               </Card>
 
-              <Card title="AO Verification Decision">
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div onClick={() => setDdAction('ACCEPT')}
-                    className={`p-4 border-2 rounded-lg cursor-pointer text-center transition-all ${ddAction === 'ACCEPT' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-400'}`}>
-                    <div className="text-3xl mb-2">✅</div>
-                    <div className="text-sm font-semibold text-green-700">Accept Payment</div>
-                    <div className="text-xs text-gray-500 mt-1">DD verified — application moves to Visual Inspection scheduling</div>
-                  </div>
-                  <div onClick={() => setDdAction('REJECT')}
-                    className={`p-4 border-2 rounded-lg cursor-pointer text-center transition-all ${ddAction === 'REJECT' ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-red-400'}`}>
-                    <div className="text-3xl mb-2">❌</div>
-                    <div className="text-sm font-semibold text-red-700">Reject Payment</div>
-                    <div className="text-xs text-gray-500 mt-1">Invalid DD — application sent back to CHA/Importer</div>
-                  </div>
-                </div>
-                {ddAction === 'REJECT' && (
-                  <div className="mb-4">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Rejection Reason *</label>
-                    <textarea rows={2} value={rejectNote} onChange={e => setRejectNote(e.target.value)}
-                      placeholder="State reason for rejecting the DD..."
-                      className="w-full text-sm border border-gray-300 rounded px-3 py-2" />
-                  </div>
-                )}
+              <Card title="AO Confirmation">
+                <InfoBox type="success" className="mb-4">
+                  Online payment of <strong>{sel.payment.amount}</strong> has been auto-verified by the system via Transaction ID <strong>{sel.payment.txnId ?? 'TXN-XXXXXX'}</strong>. AO confirmation will forward this application for Visual Inspection scheduling.
+                </InfoBox>
                 <div className="flex gap-2 justify-end">
                   <Btn color="gray" outline>Cancel</Btn>
-                  <Btn color={ddAction === 'ACCEPT' ? 'green' : 'red'} disabled={!ddAction} onClick={() => setModal(true)}>
-                    {ddAction === 'ACCEPT' ? '✅ Accept & Forward for VI' : '❌ Reject & Return to Applicant'}
-                  </Btn>
+                  <Btn color="green" onClick={() => setModal(true)}>✅ Confirm & Forward for Visual Inspection</Btn>
                 </div>
               </Card>
             </>
@@ -1193,13 +1157,12 @@ function PaymentVerification({ go, selectedId }) {
       </div>
 
       {modal && (
-        <Modal title="Confirm Payment Verification" onClose={() => setModal(false)}>
-          <p className="text-sm text-gray-700 mb-4">Confirm <strong>{ddAction}</strong> of DD #{sel?.payment?.ddNo} for {sel?.id}?</p>
-          {ddAction === 'ACCEPT' && <InfoBox type="success">Payment accepted. Application will proceed to Visual Inspection. AO will assign TO and schedule appointment.</InfoBox>}
-          {ddAction === 'REJECT' && <InfoBox type="danger">Payment rejected. Application returned to CHA/Importer to re-submit payment.</InfoBox>}
+        <Modal title="Confirm Payment & Forward for VI" onClose={() => setModal(false)}>
+          <p className="text-sm text-gray-700 mb-4">Confirm online payment for application <strong>{sel?.id}</strong> and forward for Visual Inspection?</p>
+          <InfoBox type="success">Payment confirmed. Application will proceed to Visual Inspection scheduling.</InfoBox>
           <div className="flex gap-2 mt-4 justify-end">
             <Btn color="gray" outline onClick={() => setModal(false)}>Cancel</Btn>
-            <Btn color={ddAction === 'ACCEPT' ? 'green' : 'red'} onClick={() => setModal(false)}>Confirm</Btn>
+            <Btn color="green" onClick={() => setModal(false)}>Confirm</Btn>
           </div>
         </Modal>
       )}
@@ -1254,18 +1217,6 @@ function VisualInspection({ go, selectedId }) {
             {/* Step 1: Appointment */}
             {step === 'appointment' && (
               <div className="space-y-4">
-                <Card title="Assign Technical Officer for Visual Inspection">
-                  <div className="flex gap-3 items-center">
-                    <select className="text-sm border border-gray-300 rounded px-3 py-2 flex-1">
-                      <option>-- Select TO for Visual Inspection --</option>
-                      {OFFICERS.map(o => <option key={o}>{o}</option>)}
-                    </select>
-                    <Btn color="blue">Assign TO</Btn>
-                    <Btn color="gray" outline>Re-assign Different TO</Btn>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">Currently assigned: <strong>{sel.assignedTO}</strong></p>
-                </Card>
-
                 <Card title="Schedule Inspection Appointment">
                   <div className="grid grid-cols-3 gap-3 mb-3">
                     <div>
@@ -1578,130 +1529,11 @@ function LabResults({ go, selectedId }) {
               </table>
             </Card>
 
-            {/* TO Recommendation */}
-            <Card title="TO: Verify Results & Recommend to AO">
-              <InfoBox type="info">TO verifies lab results and recommends AO for final decision. If no active TO, results go directly to AO.</InfoBox>
-              <div className="mt-3">
-                {sel.toRecommendation ? (
-                  <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded">
-                    <div className="text-2xl">👨‍💼</div>
-                    <div>
-                      <div className="text-sm font-medium text-blue-900">{sel.assignedTO}</div>
-                      <div className="text-xs text-gray-600 mt-0.5">Recommendation: <Badge color="green">{sel.toRecommendation}</Badge></div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <Btn color="green">Recommend NOC to AO</Btn>
-                    <Btn color="red" outline>Recommend NCC to AO</Btn>
-                    <Btn color="gray" outline onClick={() => setModal('REVERT_LAB')}>Revert to Lab for Clarification</Btn>
-                  </div>
-                )}
-              </div>
-            </Card>
-
-            {/* AO Final Decision */}
-            <Card title="AO: Final Decision on Lab Results">
-              {passAll ? (
-                <div className="space-y-3">
-                  <InfoBox type="success">All samples passed laboratory testing. Proceed to NOC generation.</InfoBox>
-                  <div className="flex gap-2">
-                    <Btn color="green" onClick={() => go('noc', sel.id)}>✅ Approve — Proceed to NOC Generation</Btn>
-                    <Btn color="gray" outline onClick={() => setModal('REVERT_LAB')}>Revert to Lab for Clarification</Btn>
-                  </div>
-                </div>
-              ) : hasFail ? (
-                <div className="space-y-4">
-                  <InfoBox type="danger">One or more samples failed laboratory testing. Select AO action below.</InfoBox>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { icon: '📋', label: 'Generate NCC', sub: 'Stop process — Non-Conformance Certificate', color: 'red', modal: 'NCC' },
-                      { icon: '🔄', label: 'Send Counter-Sample', sub: 'Re-test at same lab (additional sample)', color: 'yellow', modal: 'COUNTER' },
-                      { icon: '🔬', label: 'Re-sampling + New VI', sub: 'Assign TO for fresh sampling and VI', color: 'orange', modal: 'RESAMPLE' },
-                    ].map(a => (
-                      <div key={a.label} onClick={() => setModal(a.modal)}
-                        className="p-3 border-2 border-gray-200 rounded-lg cursor-pointer text-center hover:border-gray-400 transition-all">
-                        <div className="text-2xl mb-1">{a.icon}</div>
-                        <div className={`text-xs font-semibold text-${a.color}-700`}>{a.label}</div>
-                        <div className="text-xs text-gray-400 mt-1 leading-tight">{a.sub}</div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Importer Retest Request */}
-                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <div className="text-xs font-semibold text-yellow-800 mb-1.5">⚠️ Importer Retest Request Pending</div>
-                    <p className="text-xs text-gray-600 mb-2">CHA/Importer has applied for re-test after NCC. AO approval required. If approved, importer pays per-sample fee (online only). Lab re-acknowledges and commences re-test.</p>
-                    <div className="flex gap-2">
-                      <Btn size="sm" color="green">Approve Retest — Importer to Pay</Btn>
-                      <Btn size="sm" color="red" outline>Decline Retest Request</Btn>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Btn color="gray" outline onClick={() => setModal('REVERT_LAB')}>Revert to Lab for Clarification</Btn>
-                  </div>
-                </div>
-              ) : (
-                <InfoBox type="info">Awaiting lab results from INFOLNET...</InfoBox>
-              )}
-            </Card>
           </div>
         )}
       </div>
 
-      {modal === 'NCC' && (
-        <Modal title="Generate NCC — Lab Test Failure" onClose={() => setModal(null)}>
-          <InfoBox type="danger">NCC will be issued against the consignment. Application stops here. For SWIFT, NCC/OSC sent to ICEGATE via FSSAI API 3.</InfoBox>
-          <div className="mt-3"><label className="block text-xs font-medium text-gray-700 mb-1">AO Remarks *</label>
-            <textarea rows={3} placeholder="Remarks for NCC..." className="w-full text-sm border border-gray-300 rounded px-3 py-2" /></div>
-          <div className="flex gap-2 mt-4 justify-end">
-            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
-            <Btn color="red">Confirm NCC Generation</Btn>
-          </div>
-        </Modal>
-      )}
-
-      {modal === 'REVERT_LAB' && (
-        <Modal title="Revert to Lab for Clarification" onClose={() => setModal(null)}>
-          <textarea rows={3} value={clarNote} onChange={e => setClarNote(e.target.value)}
-            placeholder="Describe clarification needed from lab..." className="w-full text-sm border border-gray-300 rounded px-3 py-2" />
-          <div className="flex gap-2 mt-4 justify-end">
-            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
-            <Btn color="blue">Send Clarification to Lab</Btn>
-          </div>
-        </Modal>
-      )}
-
-      {modal === 'COUNTER' && (
-        <Modal title="Send Counter-Samples to Lab" onClose={() => setModal(null)}>
-          <p className="text-sm text-gray-600 mb-3">Select failed samples to dispatch counter-samples for re-testing.</p>
-          {sel?.samples?.filter(s => s.result === 'FAIL').map(s => (
-            <label key={s.id} className="flex items-center gap-2 text-sm mb-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
-              <input type="checkbox" defaultChecked className="rounded" />
-              <span><strong>{s.id}</strong> — {sel.items.find(i => i.sno === s.itemSno)?.product} at {s.lab}</span>
-            </label>
-          ))}
-          <div className="flex gap-2 mt-4 justify-end">
-            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
-            <Btn color="yellow">Dispatch Counter-Samples</Btn>
-          </div>
-        </Modal>
-      )}
-
-      {modal === 'RESAMPLE' && (
-        <Modal title="Arrange Re-sampling and New Visual Inspection" onClose={() => setModal(null)}>
-          <p className="text-sm text-gray-600 mb-3">Assign TO for a fresh round of sampling and another Visual Inspection.</p>
-          <select className="w-full text-sm border border-gray-300 rounded px-3 py-2 mb-3">
-            <option>-- Assign TO for Re-sampling --</option>
-            {OFFICERS.map(o => <option key={o}>{o}</option>)}
-          </select>
-          <div className="flex gap-2 justify-end">
-            <Btn color="gray" outline onClick={() => setModal(null)}>Cancel</Btn>
-            <Btn color="orange">Assign TO & Schedule Re-sampling</Btn>
-          </div>
-        </Modal>
-      )}
+      {modal === 'dummy' && null}
     </div>
   );
 }
@@ -1941,8 +1773,85 @@ function Reports() {
   );
 }
 
+// ─── Shared Layout Components ──────────────────────────────────────────────────
+function GlobalUtilityBar() {
+  return (
+    <div className="bg-[#154360] text-white py-1 px-4 flex items-center justify-between text-[11px] flex-shrink-0">
+      <div className="flex items-center gap-2">
+        <img src="https://upload.wikimedia.org/wikipedia/en/4/41/Flag_of_India.svg" alt="India" className="h-4 w-auto flex-shrink-0" onError={e => { e.target.style.display='none'; }} />
+        <span className="font-semibold opacity-90">Ministry of Health &amp; Family Welfare</span>
+        <span className="opacity-30">|</span>
+        <span className="opacity-80">Government of India</span>
+        <span className="opacity-30">|</span>
+        <span className="opacity-70">मंत्रालय स्वास्थ्य एवं परिवार कल्याण</span>
+      </div>
+      <div className="flex items-center gap-3 opacity-80">
+        <button className="hover:underline">Skip to Main Content</button>
+        <span className="opacity-40">|</span>
+        <button className="hover:underline">Screen Reader Access</button>
+        <span className="opacity-40">|</span>
+        <span>Text Size:</span>
+        <div className="flex items-center gap-0.5">
+          <button className="border border-white/40 px-1.5 rounded hover:bg-white/20 text-[10px] leading-tight py-0.5">A-</button>
+          <button className="border border-white/40 px-1.5 rounded hover:bg-white/20 text-[11px] leading-tight py-0.5">A</button>
+          <button className="border border-white/40 px-1.5 rounded hover:bg-white/20 text-[13px] leading-tight py-0.5">A+</button>
+        </div>
+        <span className="opacity-40">|</span>
+        <button className="hover:underline font-semibold">English</button>
+        <span className="opacity-40">/</span>
+        <button className="hover:underline opacity-80">हिन्दी</button>
+      </div>
+    </div>
+  );
+}
+
+function GlobalFooter() {
+  return (
+    <div className="bg-[#0D1B2A] border-t border-white/10 py-2.5 px-6 flex-shrink-0">
+      <div className="max-w-7xl mx-auto flex items-center justify-between text-[10px] text-white/40">
+        <span>&copy; 2026 Food Safety and Standards Authority of India (FSSAI) — Government of India. All Rights Reserved.</span>
+        <div className="flex gap-4">
+          {['Privacy Policy', 'Terms of Use', 'Accessibility Statement', 'Sitemap'].map(l => (
+            <button key={l} className="hover:text-white/60 transition-colors">{l}</button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Hero / Public Landing Page ────────────────────────────────────────────────
-function HeroPage({ onLoginClick }) {
+function HeroPage({ onLogin }) {
+  const [showLogin, setShowLogin] = useState(false);
+  const [loginRole, setLoginRole] = useState(null);
+  const [loginCreds, setLoginCreds] = useState({ username: '', password: '' });
+  const [loginError, setLoginError] = useState('');
+
+  const loginRoleCards = [
+    { role:'AO',    label:'Authorized Officer', icon:'👨‍⚖️',    color:'border-green-300 hover:bg-green-50' },
+    { role:'INS',   label:'Inspector / TO',     icon:'🔬',           color:'border-blue-300 hover:bg-blue-50' },
+    { role:'IMP',   label:'Importer',           icon:'🏭',          color:'border-yellow-300 hover:bg-yellow-50' },
+    { role:'CHA',   label:'CHA',                icon:'📦',           color:'border-orange-300 hover:bg-orange-50' },
+    { role:'RD',    label:'Regional Director',  icon:'👨‍💼',       color:'border-purple-300 hover:bg-purple-50' },
+    { role:'CEO',   label:'FSSAI CEO',          icon:'🏛️',      color:'border-red-300 hover:bg-red-50' },
+    { role:'ADMIN', label:'Admin',              icon:'⚙️',           color:'border-gray-300 hover:bg-gray-50' },
+  ];
+
+  const pickLoginRole = (role) => {
+    setLoginRole(role);
+    const u = DEMO_USERS.find(d => d.role === role);
+    if (u) setLoginCreds({ username: u.username, password: u.password });
+    setLoginError('');
+  };
+
+  const submitLogin = () => {
+    const user = DEMO_USERS.find(u => u.username === loginCreds.username && u.password === loginCreds.password);
+    if (user) { setShowLogin(false); onLogin(user); }
+    else { setLoginError('Invalid credentials. Select a role tile to auto-fill demo credentials.'); }
+  };
+
+  const loginDemoUser = loginRole ? DEMO_USERS.find(u => u.role === loginRole) : null;
+
   const stats = [
     { val: '3,24,816', label: 'Applications Processed', icon: '📋' },
     { val: '2,98,442', label: 'NOCs Issued',             icon: '✅' },
@@ -1967,207 +1876,137 @@ function HeroPage({ onLoginClick }) {
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-800" style={{ fontFamily: 'Arial, sans-serif' }}>
 
-      {/* ── Utility Bar ─────────────────────────────────────────────────────── */}
-      <div className="bg-[#154360] text-white py-1 px-6 flex items-center justify-end gap-5 text-[11px]">
-        <button className="hover:underline opacity-80 hover:opacity-100">Skip to Main Content</button>
-        <span className="opacity-30">|</span>
-        <button className="hover:underline opacity-80 hover:opacity-100">Screen Reader Access</button>
-        <span className="opacity-30">|</span>
-        <span className="opacity-70">Text Size:</span>
-        <div className="flex items-center gap-1">
-          <button className="border border-white/40 px-1.5 rounded hover:bg-white/10 text-[10px] leading-none py-0.5">A-</button>
-          <button className="border border-white/40 px-1.5 rounded hover:bg-white/10 text-xs leading-none py-0.5">A</button>
-          <button className="border border-white/40 px-1.5 rounded hover:bg-white/10 text-sm leading-none py-0.5">A+</button>
-        </div>
-        <span className="opacity-30">|</span>
-        <button className="hover:underline opacity-80 hover:opacity-100 font-medium">English</button>
-        <span className="text-white/40">/</span>
-        <button className="hover:underline opacity-60 hover:opacity-100">हिन्दी</button>
-      </div>
+      <GlobalUtilityBar />
 
-      {/* ── Main Header ─────────────────────────────────────────────────────── */}
-      <header className="bg-white border-b-4 border-[#FF6200] shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      {/* ── Main Header (FSSAI logo + FICS title + Nav + Login in one row) ─── */}
+      <header className="bg-white border-b-[3px] border-[#FF6200] shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 flex items-center gap-4 py-1.5">
 
-          {/* Left: Ministry + FSSAI branding block (matches attached image) */}
-          <div className="flex items-center gap-5">
-            {/* Ministry of Health block */}
-            <div className="flex items-center gap-3">
-              <img
-                src="https://upload.wikimedia.org/wikipedia/en/4/41/Flag_of_India.svg"
-                alt="Indian Flag"
-                className="h-10 w-auto"
-                onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
-              />
-              <span className="text-3xl hidden items-center">🇮🇳</span>
-              <div>
-                <div className="text-[13px] font-bold text-[#1A237E] leading-tight">Ministry of Health &amp; Family Welfare</div>
-                <div className="text-[11px] text-[#1A237E] leading-tight">Government of India</div>
-                <div className="text-[10px] text-gray-400 leading-tight">मंत्रालय स्वास्थ्य एवं परिवार कल्याण</div>
-              </div>
+          {/* FSSAI Logo image */}
+          <img
+            src={fssaiLogo}
+            alt="FSSAI"
+            className="h-14 w-auto flex-shrink-0"
+            onError={e => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
+          />
+          {/* Fallback SVG logo if image fails */}
+          <div className="hidden items-center gap-2 flex-shrink-0">
+            <div className="w-12 h-12 rounded-full bg-white border-2 border-[#006633] flex items-center justify-center shadow-sm">
+              <svg viewBox="0 0 48 48" className="w-9 h-9">
+                <circle cx="24" cy="24" r="22" fill="#006633" />
+                <text x="24" y="30" textAnchor="middle" fill="white" fontSize="16" fontWeight="bold" fontFamily="Arial">F</text>
+              </svg>
             </div>
-
-            {/* Divider */}
-            <div className="h-14 w-px bg-gray-200 mx-1" />
-
-            {/* FSSAI logo block */}
-            <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-full bg-white border-2 border-[#006633] flex items-center justify-center shadow-sm flex-shrink-0">
-                <svg viewBox="0 0 48 48" className="w-10 h-10">
-                  <circle cx="24" cy="24" r="22" fill="#006633" />
-                  <text x="24" y="30" textAnchor="middle" fill="white" fontSize="18" fontWeight="bold" fontFamily="Arial">F</text>
-                </svg>
-              </div>
-              <div>
-                <div className="text-[11px] font-black text-[#006633] tracking-wider leading-tight uppercase">Food Safety and Standards</div>
-                <div className="text-[11px] font-black text-[#006633] tracking-wider leading-tight uppercase">Authority of India</div>
-                <div className="text-[10px] text-gray-400 italic leading-tight mt-0.5">Inspiring Trust, Assuring Safe &amp; Nutritious Food</div>
-                <div className="text-[9px] text-gray-400 leading-tight">Ministry of Health and Family Welfare</div>
-              </div>
+            <div>
+              <div className="text-[10px] font-black text-[#006633] tracking-wide leading-tight uppercase">Food Safety and Standards</div>
+              <div className="text-[10px] font-black text-[#006633] tracking-wide leading-tight uppercase">Authority of India</div>
+              <div className="text-[9px] text-gray-400 italic leading-tight">Inspiring Trust, Assuring Safe &amp; Nutritious Food</div>
+              <div className="text-[8px] text-gray-400 leading-tight">Ministry of Health and Family Welfare, Government of India</div>
             </div>
           </div>
 
-          {/* Right: FICS Portal identity */}
-          <div className="text-right flex-shrink-0">
-            <div className="text-[10px] text-gray-400 uppercase tracking-widest mb-0.5">Government of India — Digital Portal</div>
-            <div className="text-3xl font-black text-[#154360] tracking-tight leading-none">FICS</div>
-            <div className="text-[13px] font-bold text-[#006633] leading-tight">Food Import Clearance System</div>
-          </div>
-        </div>
-      </header>
+          {/* Divider */}
+          <div className="h-10 w-px bg-gray-200 mx-1 flex-shrink-0" />
 
-      {/* ── Navigation Bar ──────────────────────────────────────────────────── */}
-      <nav className="bg-[#006633] shadow-md">
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <div className="flex">
+          {/* FICS Portal Name */}
+          <div className="flex-shrink-0">
+            <div className="text-[18px] font-black text-[#FF6200] leading-tight tracking-tight">Food Import Clearance System</div>
+            <div className="text-[10px] text-gray-400 leading-tight mt-0.5">FSSAI — Food Import Clearance &amp; NOC Portal</div>
+          </div>
+
+          {/* Nav links (flexible center) */}
+          <nav className="flex-1 flex items-center justify-center gap-0">
             {[
               { label: 'Home', active: true },
               { label: 'About FICS' },
-              { label: 'Circulars & Notices' },
-              { label: 'Import Guidelines' },
-              { label: 'Track Application' },
-              { label: 'Help & FAQs' },
-              { label: 'Contact Us' },
+              { label: 'Circulars' },
+              { label: 'Guidelines' },
+              { label: 'Track' },
+              { label: 'FAQs' },
+              { label: 'Contact' },
             ].map(item => (
               <button key={item.label}
-                className={`px-4 py-3 text-[12px] font-medium transition-colors ${item.active ? 'bg-[#004422] text-white border-b-2 border-[#FF6200]' : 'text-white/80 hover:bg-[#004d26] hover:text-white'}`}>
+                className={`px-3.5 py-4 text-[12px] font-medium border-b-2 transition-colors whitespace-nowrap ${
+                  item.active
+                    ? 'border-[#FF6200] text-gray-900 font-semibold'
+                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                }`}>
                 {item.label}
               </button>
             ))}
-          </div>
-          <button onClick={onLoginClick}
-            className="my-2 bg-[#FF6200] hover:bg-[#e05500] text-white font-bold px-6 py-2 rounded text-[12px] transition-colors shadow flex items-center gap-2">
-            <span>🔐</span> Login to FICS Portal
+          </nav>
+
+          {/* Login button */}
+          <button onClick={() => setShowLogin(true)}
+            className="flex-shrink-0 bg-[#FF6200] hover:bg-[#e05500] text-white font-bold px-5 py-2.5 rounded text-[13px] transition-colors shadow flex items-center gap-2 whitespace-nowrap">
+            🔒 Login
           </button>
         </div>
-      </nav>
+      </header>
 
       {/* ── Hero Section ────────────────────────────────────────────────────── */}
       <main className="flex-1">
-        <section className="bg-gradient-to-br from-[#EAF4EA] via-[#F0F7FF] to-[#EAF4EA] py-12">
-          <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 gap-10 items-center">
+        <section className="bg-white py-10 border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-8 flex items-center gap-12">
 
-            {/* LEFT: Official branding panel (matches attached header image) */}
-            <div className="relative">
-              <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
-                {/* Replicated header image area */}
-                <div className="bg-white px-6 py-5 border-b border-gray-100">
-                  <div className="flex items-center gap-4">
-                    <span className="text-5xl">🇮🇳</span>
-                    <div>
-                      <div className="text-base font-bold text-[#1A237E]">Ministry of Health &amp; Family Welfare</div>
-                      <div className="text-sm font-semibold text-[#1A237E]">Government of India</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-[#F8FFF8] px-6 py-4 border-b border-gray-100">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-full bg-[#006633] flex items-center justify-center shadow flex-shrink-0">
-                      <span className="text-white font-black text-2xl">F</span>
-                    </div>
-                    <div>
-                      <div className="text-sm font-black text-[#006633] uppercase tracking-wide leading-tight">Food Safety and Standards</div>
-                      <div className="text-sm font-black text-[#006633] uppercase tracking-wide leading-tight">Authority of India</div>
-                      <div className="text-xs text-[#388E3C] italic mt-1">Inspiring Trust, Assuring Safe &amp; Nutritious Food</div>
-                      <div className="text-xs text-gray-400 mt-0.5">Ministry of Health and Family Welfare</div>
-                    </div>
-                  </div>
-                </div>
-                {/* Showcase content */}
-                <div className="bg-gradient-to-br from-[#006633] to-[#004422] px-6 py-6 text-white">
-                  <div className="text-lg font-black tracking-wide mb-1">FICS</div>
-                  <div className="text-sm font-semibold mb-3 text-green-200">Food Import Clearance System</div>
-                  <div className="space-y-2">
-                    {[
-                      '🚢 Covers all major Indian Ports & Air Cargo Stations',
-                      '🔗 SWIFT / ICEGATE real-time integration',
-                      '🧪 INFOLNET lab network — 124 accredited labs',
-                      '📜 Digital NOC, PNOC & NCC issuance',
-                      '⚖️  Multi-level Review & Appeal mechanism',
-                    ].map(f => (
-                      <div key={f} className="flex items-start gap-2 text-xs text-green-100 leading-snug">{f}</div>
-                    ))}
-                  </div>
-                </div>
-                <div className="bg-[#154360] px-6 py-3 flex items-center justify-between">
-                  <span className="text-xs text-white/60">FSSAI &bull; ICEGATE &bull; INFOLNET</span>
-                  <span className="text-xs text-green-300 font-semibold">Secure &bull; Paperless &bull; Transparent</span>
-                </div>
-              </div>
-            </div>
+            {/* LEFT: Headline + CTAs + badges */}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-[48px] font-black leading-[1.1] mb-2" style={{ color: '#1A237E' }}>
+                Seamless Imports.
+              </h1>
+              <h1 className="text-[48px] font-black leading-[1.1] mb-8" style={{ color: '#FF6200' }}>
+                Uncompromised<br />Safety.
+              </h1>
 
-            {/* RIGHT: Portal description + utility links + CTA */}
-            <div className="space-y-6">
-              <div>
-                <div className="inline-block bg-[#FF6200]/10 text-[#FF6200] text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wide">
-                  Official Government Portal
-                </div>
-                <h1 className="text-3xl font-black text-[#154360] leading-tight mb-3">
-                  Food Import<br />Clearance System
-                </h1>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  FICS is FSSAI's digital platform for end-to-end processing of food import consignments —
-                  from SWIFT Bill of Entry intake to NOC/NCC issuance. Replacing the legacy WCF system,
-                  FICS ensures transparent, paperless, and rule-based clearance at all Indian ports.
-                </p>
-              </div>
-
-              {/* Utility / Quick-action panel */}
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-                <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Quick Actions</div>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { icon: '🔍', label: 'Track Application (ARN)',  sub: 'Check clearance status' },
-                    { icon: '📥', label: 'Download NOC / NCC',       sub: 'Retrieve issued certificates' },
-                    { icon: '📋', label: 'Import Guidelines',         sub: 'SOP & regulatory guidance' },
-                    { icon: '📞', label: 'Helpdesk Support',          sub: '1800-XXX-XXXX (Toll Free)' },
-                  ].map(q => (
-                    <div key={q.label} className="flex items-start gap-2 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer border border-gray-100 transition-colors">
-                      <span className="text-lg flex-shrink-0">{q.icon}</span>
-                      <div>
-                        <div className="text-xs font-semibold text-gray-800 leading-tight">{q.label}</div>
-                        <div className="text-[10px] text-gray-400 leading-tight mt-0.5">{q.sub}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Login CTA */}
-              <div className="bg-gradient-to-r from-[#154360] to-[#006633] rounded-xl p-5 text-white">
-                <div className="text-sm font-bold mb-1">Authorised Users — Secure Login</div>
-                <div className="text-xs text-white/70 mb-4">
-                  Officers, Importers, CHA, Regional Directors, and Administrators access FICS through their designated role-based portal.
-                </div>
-                <button onClick={onLoginClick}
-                  className="w-full bg-[#FF6200] hover:bg-[#e05500] text-white font-bold py-3 rounded-lg text-sm transition-colors shadow-lg flex items-center justify-center gap-2">
-                  <span>🔐</span> Login to FICS Portal &rarr;
+              {/* CTA Buttons */}
+              <div className="flex items-center gap-4 mb-8">
+                <button onClick={() => setShowLogin(true)}
+                  className="flex items-center gap-2 bg-[#FF6200] hover:bg-[#e05500] text-white font-bold px-7 py-3.5 rounded-lg text-[15px] transition-colors shadow-md">
+                  🔒 Login to FICS Portal
                 </button>
-                <p className="text-center text-[10px] text-white/40 mt-2">
-                  Secured by NIC &bull; 256-bit SSL Encryption &bull; GOI Data Centre
-                </p>
+                <button className="flex items-center gap-2 border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-bold px-7 py-3.5 rounded-lg text-[15px] transition-colors bg-white">
+                  🔍 Track NOC Application
+                </button>
+              </div>
+
+              {/* Trust badges */}
+              <div className="flex items-center gap-8 text-[13px] font-semibold text-gray-600">
+                <span className="flex items-center gap-1.5">
+                  <span className="text-[#006633] font-black text-base">✓</span> 100% PAPERLESS
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="text-[#006633] font-black text-base">✓</span> ICEGATE INTEGRATED
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="text-[#006633] font-black text-base">✓</span> 124+ NABL LABS
+                </span>
               </div>
             </div>
+
+            {/* RIGHT: Flowchart image */}
+            <div className="flex-shrink-0 w-[55%]">
+              <div className="rounded-2xl border border-gray-200 shadow-lg overflow-hidden bg-white p-3">
+                <img
+                  src={ficsFlowchart}
+                  alt="FICS Import Clearance Process Flow"
+                  className="w-full h-auto object-contain rounded-xl"
+                  onError={e => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+                {/* Fallback if image not found */}
+                <div className="hidden items-center justify-center h-48 text-gray-400 text-sm flex-col gap-2">
+                  <span className="text-4xl">📊</span>
+                  <span>FICS Process Flowchart</span>
+                  <span className="text-xs text-gray-300">fics-flowchart.png</span>
+                </div>
+              </div>
+            </div>
+
           </div>
         </section>
 
@@ -2282,17 +2121,80 @@ function HeroPage({ onLoginClick }) {
             </div>
           </div>
         </div>
-        <div className="border-t border-white/10 py-3 px-6">
-          <div className="max-w-7xl mx-auto flex items-center justify-between text-[10px] text-white/30">
-            <span>&copy; 2026 Food Safety and Standards Authority of India (FSSAI) — Government of India. All Rights Reserved.</span>
-            <div className="flex gap-4">
-              {['Privacy Policy', 'Terms of Use', 'Accessibility Statement', 'Sitemap'].map(l => (
-                <button key={l} className="hover:text-white/60 transition-colors">{l}</button>
+      </footer>
+      <GlobalFooter />
+
+      {/* ── Login Modal ─────────────────────────────────────────────────────── */}
+      {showLogin && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={e => { if (e.target === e.currentTarget) setShowLogin(false); }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 relative max-h-[90vh] overflow-y-auto">
+            <button onClick={() => setShowLogin(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl font-bold leading-none">✕</button>
+
+            <div className="text-center mb-5">
+              <div className="text-lg font-black text-[#154360]">Food Import Clearance System</div>
+              <div className="text-xs text-gray-500 mt-0.5">FICS — Officer &amp; Stakeholder Portal</div>
+            </div>
+
+            <p className="text-center text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Select Your Role</p>
+
+            <div className="grid grid-cols-7 gap-2 mb-5">
+              {loginRoleCards.map(r => (
+                <button key={r.role} onClick={() => pickLoginRole(r.role)}
+                  className={`border-2 rounded-xl p-3 text-center transition-all ${loginRole === r.role ? r.color + ' ring-2 ring-[#FF6200]' : 'border-gray-200 ' + r.color}`}>
+                  <div className="text-2xl mb-1">{r.icon}</div>
+                  <div className="text-xs font-bold text-gray-800 leading-tight">{r.label}</div>
+                  <div className="text-[10px] text-gray-500 mt-1 leading-tight">{r.desc}</div>
+                </button>
               ))}
+            </div>
+
+            <div className="max-w-sm mx-auto">
+              {loginDemoUser && (
+                <div className="bg-orange-50 border border-orange-200 rounded-lg px-4 py-2.5 mb-4 text-xs text-center">
+                  <div className="font-semibold text-orange-800">{loginDemoUser.name} — {loginDemoUser.designation}</div>
+                  <div className="text-orange-700 mt-0.5">{loginDemoUser.org}</div>
+                  <div className="text-gray-500 mt-1">Username: <strong>{loginDemoUser.username}</strong> &nbsp;|&nbsp; Password: <strong>{loginDemoUser.password}</strong></div>
+                </div>
+              )}
+
+              <div className="space-y-3 mb-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Username</label>
+                  <input type="text" value={loginCreds.username}
+                    onChange={e => setLoginCreds(p => ({ ...p, username: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-[#FF6200]"
+                    placeholder="Enter username" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Password</label>
+                  <input type="password" value={loginCreds.password}
+                    onChange={e => setLoginCreds(p => ({ ...p, password: e.target.value }))}
+                    onKeyDown={e => e.key === 'Enter' && submitLogin()}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-[#FF6200]"
+                    placeholder="Enter password" />
+                </div>
+              </div>
+
+              {loginError && <p className="text-xs text-red-600 text-center mb-2">{loginError}</p>}
+
+              <button onClick={submitLogin}
+                className="w-full bg-[#FF6200] hover:bg-[#e05500] text-white font-bold py-2.5 rounded-lg transition-colors text-sm">
+                Login to FICS Portal →
+              </button>
+
+              <p className="text-center mt-3 text-xs text-gray-400">
+                Quick login: &nbsp;
+                {DEMO_USERS.filter(u => u.role !== 'LABS').map(u => (
+                  <button key={u.role} onClick={() => { setShowLogin(false); onLogin(u); }}
+                    className="mx-1 text-[#FF6200] hover:underline font-medium">{u.role}</button>
+                ))}
+              </p>
             </div>
           </div>
         </div>
-      </footer>
+      )}
     </div>
   );
 }
@@ -2300,14 +2202,14 @@ function HeroPage({ onLoginClick }) {
 // ─── Login Screen ──────────────────────────────────────────────────────────────
 function LoginScreen({ onLogin, onBack }) {
   const roleCards = [
-    { role: 'AO',    label: 'Authorized Officer',  icon: '👨‍⚖️',           color: 'border-green-300 hover:bg-green-50' },
-    { role: 'INS',   label: 'Inspector / TO',      icon: '🔬',        color: 'border-blue-300 hover:bg-blue-50' },
-    { role: 'IMP',   label: 'Importer',            icon: '🏭',           color: 'border-yellow-300 hover:bg-yellow-50' },
-    { role: 'CHA',   label: 'CHA',                 icon: '📦',           color: 'border-orange-300 hover:bg-orange-50' },
-    { role: 'LABS',  label: 'Lab',                 icon: '🧪',           color: 'border-teal-300 hover:bg-teal-50' },
-    { role: 'RD',    label: 'Regional Director',   icon: '👨‍💼',          color: 'border-purple-300 hover:bg-purple-50' },
-    { role: 'CEO',   label: 'FSSAI CEO',           icon: '🏛️',           color: 'border-red-300 hover:bg-red-50' },
-    { role: 'ADMIN', label: 'Admin',               icon: '⚙️',           color: 'border-gray-300 hover:bg-gray-50' },
+    { role: 'AO',    label: 'Authorized Officer',  icon: '👨‍⚖️', desc: 'Scrutiny, Payment, VI, Lab, NOC issuance',            color: 'border-green-300 hover:bg-green-50' },
+    { role: 'INS',   label: 'Inspector / TO',      icon: '🔬',   desc: 'Inspection assignments, sampling, lab forwarding',     color: 'border-blue-300 hover:bg-blue-50' },
+    { role: 'IMP',   label: 'Importer',            icon: '🏭',   desc: 'Application status, payment, NOC/NCC download',        color: 'border-yellow-300 hover:bg-yellow-50' },
+    { role: 'CHA',   label: 'CHA',                 icon: '📦',   desc: 'Client applications, clearance tracking',              color: 'border-orange-300 hover:bg-orange-50' },
+    { role: 'LABS',  label: 'Lab',                 icon: '🧪',   desc: 'Sample receipt, analysis, report & invoice generation', color: 'border-teal-300 hover:bg-teal-50' },
+    { role: 'RD',    label: 'Regional Director',   icon: '👨‍💼',  desc: '1st Review decisions, port performance',               color: 'border-purple-300 hover:bg-purple-50' },
+    { role: 'CEO',   label: 'FSSAI CEO',           icon: '🏛️',   desc: '2nd Appeal (final authority), national dashboard',     color: 'border-red-300 hover:bg-red-50' },
+    { role: 'ADMIN', label: 'Admin',               icon: '⚙️',   desc: 'User management, masters, CMS administration',         color: 'border-gray-300 hover:bg-gray-50' },
   ];
   const [selectedRole, setSelectedRole] = useState(null);
   const [creds, setCreds] = useState({ username: '', password: '' });
@@ -2349,8 +2251,8 @@ function LoginScreen({ onLogin, onBack }) {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6">
         <p className="text-center text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">Select Your Role</p>
 
-        <div className="grid grid-cols-8 gap-2 mb-5">
-          {roleCards.map(r => (
+        <div className="grid grid-cols-7 gap-2 mb-5">
+          {roleCards.filter(r => r.role !== 'LABS').map(r => (
             <button key={r.role} onClick={() => pickRole(r.role)}
               className={`border-2 rounded-xl p-3 text-center transition-all ${selectedRole === r.role ? r.color + ' ring-2 ring-green-500 bg-green-50' : 'border-gray-200 ' + r.color}`}>
               <div className="text-2xl mb-1">{r.icon}</div>
@@ -2403,7 +2305,7 @@ function LoginScreen({ onLogin, onBack }) {
           </p>
         </div>
       </div>
-      {/* <p className="mt-5 text-white/30 text-xs">FICS Mockup — For demonstration purposes only &nbsp;|&nbsp; &copy; FSSAI 2024</p> */}
+      <p className="mt-5 text-white/30 text-xs">FICS Mockup — For demonstration purposes only &nbsp;|&nbsp; &copy; FSSAI 2024</p>
     </div>
   );
 }
@@ -3029,26 +2931,9 @@ function Review1Panel() {
             <p className="text-xs text-gray-500 mt-2">Importer has submitted Form 6 for 1st Review. FICS confirms this is the importer's 1st review request for this NCC number.</p>
           </Card>
 
-          <Card title="RD Assignment & TO Delegation">
-            <InfoBox type="info">RD may conduct the review himself or delegate to a TO mapped to the port. Assigned TO seeks clarifications from importer, collects responses, and presents findings to RD. RD takes the final decision.</InfoBox>
+          <Card title="TO Delegation">
+            <InfoBox type="info">RD may delegate to a TO mapped to the port. Assigned TO seeks clarifications from importer, collects responses, and presents findings to RD. RD takes the final decision.</InfoBox>
             <div className="mt-3 space-y-3">
-              {sel.assignedRD ? (
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded flex items-center gap-3">
-                  <span className="text-2xl">👨‍⚖️</span>
-                  <div>
-                    <div className="text-sm font-semibold text-blue-900">{sel.assignedRD}</div>
-                    <div className="text-xs text-gray-500 mt-0.5">Assigned as Review Decision Authority (RD)</div>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <label className="block text-xs font-medium mb-1">Assign RD (Review Decision Authority) *</label>
-                  <select className="w-full text-sm border border-gray-300 rounded px-3 py-2">
-                    <option>-- Select RD --</option>
-                    {rdOfficers.map(o => <option key={o}>{o}</option>)}
-                  </select>
-                </div>
-              )}
               <div>
                 <label className="block text-xs font-medium mb-1">Assign TO (optional — if RD delegates port-level review)</label>
                 <select className="w-full text-sm border border-gray-300 rounded px-3 py-2">
@@ -3056,7 +2941,7 @@ function Review1Panel() {
                   {OFFICERS.map(o => <option key={o}>{o}</option>)}
                 </select>
               </div>
-              <Btn color="blue">Save Assignment</Btn>
+              <Btn color="blue">Save TO Assignment</Btn>
             </div>
           </Card>
 
@@ -3311,8 +3196,7 @@ export default function App() {
     setAppView('hero');
   };
 
-  if (appView === 'hero') return <HeroPage onLoginClick={() => setAppView('login')} />;
-  if (appView === 'login') return <LoginScreen onLogin={handleLogin} onBack={() => setAppView('hero')} />;
+  if (appView === 'hero') return <HeroPage onLogin={handleLogin} />;
 
   const u = currentUser;
   const SCREENS = {
@@ -3338,11 +3222,15 @@ export default function App() {
   const defaultScreen = ROLE_DEFAULT_SCREEN[u?.role] ?? 'dashboard';
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <Sidebar active={screen} go={s => go(s)} currentUser={u} onLogout={handleLogout} />
-      <main className="flex-1 overflow-y-auto p-5">
-        {SCREENS[screen] ?? SCREENS[defaultScreen]}
-      </main>
+    <div className="flex flex-col h-screen overflow-hidden">
+      <GlobalUtilityBar />
+      <div className="flex flex-1 min-h-0 overflow-hidden bg-gray-50">
+        <Sidebar active={screen} go={s => go(s)} currentUser={u} onLogout={handleLogout} />
+        <main className="flex-1 overflow-y-auto p-5">
+          {SCREENS[screen] ?? SCREENS[defaultScreen]}
+        </main>
+      </div>
+      <GlobalFooter />
     </div>
   );
 }
