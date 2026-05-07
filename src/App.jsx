@@ -1752,7 +1752,7 @@ function Reports() {
           { title: 'Visual Inspection Report', desc: 'VI outcomes, discrepancy types, NCC generated', icon: '👁️' },
           { title: 'Lab Results Report', desc: 'Pass / Fail rates by product category and lab', icon: '🧪' },
           { title: 'NOC / PNOC / NCC Issued', desc: 'Certificate issuance summary for the period', icon: '📜' },
-          { title: 'SLA Breach Report', desc: 'Applications pending beyond SLA threshold', icon: '⏱️' },
+          { title: 'Non Compliant Importers Report', desc: 'Importers with non-compliant history', icon: '⏱️' },
           { title: 'SWIFT Integration Log', desc: 'ICEGATE API exchange log — ARN, queries, certificates', icon: '🔗' },
           { title: 'Payment Reconciliation', desc: 'Online / DD payments received vs pending', icon: '💳' },
           { title: 'TO Performance Report', desc: 'Applications handled by each Technical Officer', icon: '👨‍💼' },
